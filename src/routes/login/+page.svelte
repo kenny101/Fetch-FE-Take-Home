@@ -1,38 +1,41 @@
 <script lang="ts">
-	import { enhance } from "$app/forms";
 	import { goto } from '$app/navigation';
-	import { PUBLIC_API_URL } from "$env/static/public";
-	
-	let name = ''
-	let email = ''
+	import { PUBLIC_API_URL } from '$env/static/public';
+	import DogImage from '$lib/assets/doggo.jpg';
+
+	let name = '';
+	let email = '';
 	const handleLogin = async () => {
 		try {
-            const response = await fetch(`${PUBLIC_API_URL}/auth/login`, {
-                method: 'POST',
+			const response = await fetch(`${PUBLIC_API_URL}/auth/login`, {
+				method: 'POST',
 				credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, email }),
-            });
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name, email })
+			});
 
-            if (response.ok) {
-				goto('/')
-            } else {
-                console.error('Authentication failed');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-	}
+			if (response.ok) {
+				goto('/');
+			} else {
+				console.error('Authentication failed');
+			}
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	};
 </script>
 
-<header class="text-center py-4 my-10 sm:my-5">
-	<h1 class="text-center mb-2 text-3xl font-bold">Let's Start Finding Your Furry Companion 🐶</h1>
+<header class="text-center mt-10">
+	<h1 class="text-center h1 font-bold text-primary-500 mb-10">
+		Let's Start Finding Your Furry Companion
+	</h1>
+	<img src={DogImage} alt="dog peeking out" class="mx-auto h-60 object-cover" />
 </header>
 
-<section class="card p-6 space-y-6 shadow-xl text-left max-w-xl mx-auto">
-	<form class="space-y-8" on:submit={handleLogin}>
+<section class="card p-6 shadow-xl text-left max-w-xl mx-auto ">
+	<form class="space-y-8 " on:submit={handleLogin}>
 		<label class="label" for="name"
 			>Name
 			<input

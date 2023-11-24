@@ -32,7 +32,7 @@
 	<title>Fetch</title>
 </svelte:head>
 
-<div class="flex flex-col min-h-screen">
+<div class="flex flex-col min-h-screen bg-gradient-to-br">
 	<AppShell class="flex-grow">
 		<AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
 			<svelte:fragment slot="lead">

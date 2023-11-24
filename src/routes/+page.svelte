@@ -361,7 +361,7 @@
 				<svelte:fragment slot="header"
 					><header class="text-center mt-10 sm:mt-5">
 						<h1
-							class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500"
+							class="mx-auto mb-10 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500"
 						>
 							Your Favorite Dogs
 						</h1>

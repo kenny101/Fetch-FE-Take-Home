@@ -27,6 +27,11 @@
 			$favoriteDogs = $favoriteDogs.filter((dogObject) => dogObject.id !== id);
 		}
 	}
+
+	function removeDog() {
+		$favoriteDogs = $favoriteDogs.filter((dogObject) => dogObject.id !== id);
+		$removedDogs = $removedDogs.filter((dogObject) => dogObject.id !== id);
+	}
 </script>
 
 <div class="max-w-xl mx-auto mb-5 space-y-2 shadow-xl rounded-md">
@@ -48,6 +53,12 @@
 				{:else}
 					<button class="btn-icon variant-ghost-primary" on:click={toggleFavorite}>
 						<Icon icon="clarity:heart-broken-line" class="text-primary-500 text-3xl" />
+					</button>
+				{/if}
+
+				{#if inConfirmationStep}
+					<button class="btn-icon variant-ghost-secondary" on:click={removeDog}>
+						<Icon icon="iconamoon:close-bold" class="text-secondary-500 text-3xl" />
 					</button>
 				{/if}
 			</div>
