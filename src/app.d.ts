@@ -32,3 +32,6 @@ interface Coordinates {
     lon: number;
 }
 
+interface Match {
+    match: string
+}

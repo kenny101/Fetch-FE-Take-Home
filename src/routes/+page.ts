@@ -1,8 +1,7 @@
 import type { PageLoad } from './$types';
 import { PUBLIC_API_URL } from '$env/static/public';
-import { redirect } from '@sveltejs/kit';
 import { goto } from '$app/navigation';
-
+import { browser } from '$app/environment';
 
 export const load = (async ({ fetch, params }) => {
 	try {
@@ -15,17 +14,19 @@ export const load = (async ({ fetch, params }) => {
 		})
 
 		if (response.ok) {
-            const listOfBreeds:string[] = await response.json();
-            return {
-                breeds: listOfBreeds,
-            }
+			const listOfBreeds: string[] = await response.json();
+			return {
+				breeds: listOfBreeds,
+			}
 		}
-		
-		goto('/login')
 
-        return {
-            breeds: [],
-        }
+		$: if (browser) {
+			goto('login')
+		}
+
+		return {
+			breeds: [],
+		}
 	} catch (error) {
 		console.error('Error:', error);
 	}

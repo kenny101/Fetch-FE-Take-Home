@@ -1,41 +1,35 @@
 <script lang="ts">
-    import Icon from "@iconify/svelte";
-	import { favoriteDogs, removedDogs } from "$lib/user";
+	import Icon from '@iconify/svelte';
+	import { favoriteDogs, removedDogs } from '$lib/user';
 
 	export let dogObject: Dog;
-	export let favorite:boolean;
+	export let favorite: boolean;
+	export let showButtons = true;
+	export let inConfirmationStep = false;
 
-	let {name, img, age, zip_code, breed, id} = dogObject;
-	let inConfirmationStep = false;
-
-	if (favorite) {
-		inConfirmationStep = true;
-	}
+	let { name, img, age, zip_code, breed, id } = dogObject;
 
 	function toggleFavorite() {
-    	favorite = !favorite;
-		
+		favorite = !favorite;
+
 		if (inConfirmationStep) {
 			if (!favorite) {
 				$removedDogs = [...$removedDogs, dogObject];
-			}else{
+			} else {
 				$removedDogs = $removedDogs.filter((dogObject) => dogObject.id !== id);
 			}
-			console.log("removed dogs:", $removedDogs)
 			return;
 		}
 
 		if (favorite) {
 			$favoriteDogs = [...$favoriteDogs, dogObject];
-			
 		} else {
 			$favoriteDogs = $favoriteDogs.filter((dogObject) => dogObject.id !== id);
 		}
-		console.log("favorites:", $favoriteDogs);
 	}
 </script>
 
-<div class="max-w-xs mx-auto mb-5 space-y-2">
+<div class="max-w-xl mx-auto mb-5 space-y-2 shadow-xl rounded-md">
 	<header class="text-center relative">
 		<button on:click={toggleFavorite}
 			><img
@@ -45,19 +39,22 @@
 			/>
 		</button>
 
-		<div class="absolute bottom-3 left-3">
-			{#if favorite}
-				<button class="btn-icon variant-filled" on:click={toggleFavorite}>
-					<Icon icon="noto:red-heart" class="text-error-500 text-3xl" />
-				</button>
-			{:else}
-				<button class="btn-icon variant-filled-primary" on:click={toggleFavorite}>
-					<Icon icon="noto:broken-heart" class="text-grey-300 text-3xl" />
-				</button>
-			{/if}
-		</div>
+		{#if showButtons}
+			<div class="absolute bottom-0 left-3">
+				{#if favorite}
+					<button class="btn-icon variant-ghost-error" on:click={toggleFavorite}>
+						<Icon icon="clarity:heart-solid" class="text-error-500 text-3xl" />
+					</button>
+				{:else}
+					<button class="btn-icon variant-ghost-primary" on:click={toggleFavorite}>
+						<Icon icon="clarity:heart-broken-line" class="text-primary-500 text-3xl" />
+					</button>
+				{/if}
+			</div>
+		{/if}
 	</header>
-	<section class="text-center">
+
+	<section class="text-center pb-5">
 		<h2 class="text-2xl font-semibold">{name}</h2>
 		<p class="text-lg text-gray-600 flex items-center justify-center">
 			<span class="mx-1"><Icon icon="mdi-paw" /></span>
