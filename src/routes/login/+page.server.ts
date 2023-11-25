@@ -37,7 +37,7 @@ export const actions = {
       .where(and(eq(usersTable.email, formData.email), eq(usersTable.name, formData.name)))
       .limit(1);
 
-    let userId: number  = 0;
+    let userId: number = 0;
     if (user.length) userId = user[0].id;
 
     if (user.length === 0) {
@@ -57,6 +57,10 @@ export const actions = {
 
     event.cookies.set("auth_token", token, {
       path: "/",
+      secure: true,
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: 60 * 60
     });
 
     throw redirect(301, "/");
