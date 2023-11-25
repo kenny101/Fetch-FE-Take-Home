@@ -1,9 +1,8 @@
 <p align="center">
   <a href="https://t4stack.com" target="_blank" rel="noopener noreferrer">
     <picture>
-      <img src="https://github.com/kenny101/Fetch-FE-Take-Home/assets/53395124/e8caa477-b7d6-4ae9-abb1-ca5a75e82b60" width="500" alt="Image of dog">
+      <img src="https://github.com/kenny101/Fetch-FE-Take-Home/assets/53395124/8367efff-79be-4040-9485-bec7d12033e7" width="500" alt="Image of dog">
     </picture>
-
   </a>
 </p>
 
