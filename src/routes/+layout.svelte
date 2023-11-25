@@ -7,8 +7,7 @@
 	import { page } from '$app/stores';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
-	import { resetDogStores } from '$lib/user';
-
+	
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	const logoutAction = async () => {
@@ -20,8 +19,7 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			goto('/login');
-			resetDogStores();
+			goto('/logout');
 		} catch (error) {
 			console.error('Error:', error);
 		}

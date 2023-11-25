@@ -19,20 +19,11 @@ interface Dog {
     isFavorite: boolean // added additional bool flag for unfavoriting favorited dogs
 }
 
-interface Location {
-    zip_code: string
-    latitude: number
-    longitude: number
-    city: string
-    state: string
-    county: string
-}
-
-interface Coordinates {
-    lat: number;
-    lon: number;
-}
-
 interface Match {
     match: string
+}
+
+interface User {
+    name: string
+    email: string
 }

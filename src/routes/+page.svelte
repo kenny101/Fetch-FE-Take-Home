@@ -6,12 +6,14 @@
 	import { PUBLIC_API_URL } from '$env/static/public';
 	import Icon from '@iconify/svelte';
 	import DogImage from '$lib/assets/doggo.jpg';
-	import { favoriteDogs, resetDogStores } from '$lib/user';
+	import { favoriteDogs } from '$lib/user';
 	import { Confetti } from 'svelte-confetti';
 	import { Paginator, type PaginationSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 
 	export let data: PageData;
+
+	if (data.favoriteDogs) $favoriteDogs = data.favoriteDogs;
 
 	let inputBreed: string = '';
 	let inputChipList: string[] = [];
@@ -100,7 +102,7 @@
 				}
 			});
 
-			if (!response.ok) goto('/login');
+			if (!response.ok) goto('/logout');
 
 			const data = await response.json();
 			if (data.total == 0) searchMessage = 'No results found with specified filter.';
@@ -124,7 +126,7 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			if (!response.ok) goto('/login');
+			if (!response.ok) goto('/logout');
 
 			const data = await response.json();
 			if (data.next) nextPaginationQuery = data.next;
@@ -145,7 +147,7 @@
 				body: JSON.stringify(listOfDogIds)
 			});
 
-			if (!response.ok) goto('/login');
+			if (!response.ok) goto('/logout');
 			const data: Dog[] = addMatchedFlag(await response.json());
 
 			if (clearData) {
@@ -169,7 +171,7 @@
 				body: JSON.stringify(listOfDogIds)
 			});
 
-			if (!response.ok) goto('/login');
+			if (!response.ok) goto('/logout');
 			const data: Match = await response.json();
 			const dogMatchId: string = data.match;
 			return dogMatchId;
@@ -191,16 +193,35 @@
 	async function onNextHandler(e: {
 		detail: { state: { current: number; total: number }; step: number };
 	}) {
+		syncFavoriteDogs();
+
 		if (e.detail.step == 1) {
 			await matchDog();
 		}
+	}
+
+	async function onBackHandler(e: {
+		detail: { state: { current: number; total: number }; step: number };
+	}) {
+		syncFavoriteDogs();
+	}
+
+	async function syncFavoriteDogs() {
+		let formData = new FormData();
+		formData.append('favoriteDogs', JSON.stringify($favoriteDogs));
+
+		fetch('?/sync', {
+			body: formData,
+			method: 'POST'
+		});
 	}
 
 	function resetData() {
 		allDogs = [];
 		inputChipList = [];
 		forceStepRerender = !forceStepRerender;
-		resetDogStores();
+		$favoriteDogs = [];
+		syncFavoriteDogs();
 	}
 
 	function addMatchedFlag(dogsList: Dog[]) {
@@ -219,7 +240,10 @@
 			buttonCompleteLabel="Adopt Another"
 			on:next={onNextHandler}
 			on:complete={resetData}
+			on:back={onBackHandler}
 		>
+			<input type="text" hidden name="favoriteDogs" value="${$favoriteDogs}" />
+
 			<Step buttonNextLabel="Confirm Matches →" locked={$favoriteDogs.length == 0}>
 				<svelte:fragment slot="header">
 					<header class="text-center">
@@ -378,13 +402,20 @@
 						</h1>
 					</header>
 				</svelte:fragment>
-				<section
-					class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center mx-5 md:mx-10 lg:mx-20"
-				>
-					{#each $favoriteDogs as dogObject}
-						<DogCard {dogObject} inConfirmationStep={true} />
-					{/each}
-				</section>
+
+				{#if $favoriteDogs.length}
+					<section
+						class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center mx-5 md:mx-10 lg:mx-20"
+					>
+						{#each $favoriteDogs as dogObject (dogObject.id)}
+							<DogCard {dogObject} inConfirmationStep={true} />
+						{/each}
+					</section>
+				{:else}
+					<p class="h2 flex items-center justify-center font-semibold text-primary-400 h-60">
+						Add at least one dog to match.
+					</p>
+				{/if}
 			</Step>
 			<Step>
 				<div

@@ -28,14 +28,15 @@
 	}
 
 	function removeDog() {
+		dogObject.isFavorite = false;
 		$favoriteDogs = $favoriteDogs.filter((dogObject) => dogObject.id !== id);
 	}
 </script>
 
 <div class="max-w-xl mx-auto mb-5 space-y-2 shadow-xl rounded-md">
 	<header class="text-center relative">
-		<button on:click={toggleFavorite}
-			><img
+		<button on:click={toggleFavorite}>
+			<img
 				src={img}
 				alt={`${breed}`}
 				class="rounded-md w-60 h-60 object-cover gradient-mask-b-60 hover:cursor-pointer"

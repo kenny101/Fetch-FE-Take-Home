@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { PUBLIC_API_URL } from '$env/static/public';
 	import DogImage from '$lib/assets/doggo.jpg';
-
+	import { enhance } from '$app/forms';
 	let name = '';
 	let email = '';
 	const handleLogin = async () => {
@@ -34,8 +34,8 @@
 	<img src={DogImage} alt="dog peeking out" class="mx-auto h-60 object-cover" />
 </header>
 
-<section class="card p-6 shadow-xl text-left max-w-xl mx-auto ">
-	<form class="space-y-8 " on:submit={handleLogin}>
+<section class="card p-6 shadow-xl text-left max-w-xl mx-auto">
+	<form class="space-y-8" method="POST" use:enhance={handleLogin}>
 		<label class="label" for="name"
 			>Name
 			<input
