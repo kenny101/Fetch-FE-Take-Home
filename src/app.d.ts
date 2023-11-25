@@ -16,6 +16,7 @@ interface Dog {
     age: number
     zip_code: string
     breed: string
+    isFavorite: boolean // added additional bool flag for unfavoriting favorited dogs
 }
 
 interface Location {

@@ -1,27 +1,26 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { favoriteDogs, removedDogs } from '$lib/user';
+	import { favoriteDogs } from '$lib/user';
 
 	export let dogObject: Dog;
-	export let favorite: boolean;
 	export let showButtons = true;
 	export let inConfirmationStep = false;
 
-	let { name, img, age, zip_code, breed, id } = dogObject;
+	let { name, img, age, zip_code, breed, id, isFavorite } = dogObject;
 
 	function toggleFavorite() {
-		favorite = !favorite;
+		isFavorite = !isFavorite;
 
+		// Prevent removing dog from favoriteDogs if in confirmation step
 		if (inConfirmationStep) {
-			if (!favorite) {
-				$removedDogs = [...$removedDogs, dogObject];
-			} else {
-				$removedDogs = $removedDogs.filter((dogObject) => dogObject.id !== id);
-			}
+			const dogIndex = $favoriteDogs.findIndex((dog) => dog.id === id);
+			$favoriteDogs[dogIndex].isFavorite = isFavorite;
+			$favoriteDogs = [...$favoriteDogs];
 			return;
 		}
 
-		if (favorite) {
+		if (isFavorite) {
+			dogObject.isFavorite = true;
 			$favoriteDogs = [...$favoriteDogs, dogObject];
 		} else {
 			$favoriteDogs = $favoriteDogs.filter((dogObject) => dogObject.id !== id);
@@ -30,7 +29,6 @@
 
 	function removeDog() {
 		$favoriteDogs = $favoriteDogs.filter((dogObject) => dogObject.id !== id);
-		$removedDogs = $removedDogs.filter((dogObject) => dogObject.id !== id);
 	}
 </script>
 
@@ -46,7 +44,7 @@
 
 		{#if showButtons}
 			<div class="absolute bottom-0 left-3">
-				{#if favorite}
+				{#if isFavorite}
 					<button class="btn-icon variant-ghost-error" on:click={toggleFavorite}>
 						<Icon icon="clarity:heart-solid" class="text-error-500 text-3xl" />
 					</button>

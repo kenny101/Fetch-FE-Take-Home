@@ -6,7 +6,7 @@
 	import { PUBLIC_API_URL } from '$env/static/public';
 	import Icon from '@iconify/svelte';
 	import DogImage from '$lib/assets/doggo.jpg';
-	import { favoriteDogs, removedDogs, resetDogStores } from '$lib/user';
+	import { favoriteDogs, resetDogStores } from '$lib/user';
 	import { Confetti } from 'svelte-confetti';
 	import { Paginator, type PaginationSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
@@ -30,15 +30,16 @@
 		name: '',
 		age: 0,
 		zip_code: '',
-		breed: ''
+		breed: '',
+		isFavorite: false
 	};
-	let forceStepRerender: boolean = false;
+	let forceStepRerender: boolean = false; // Used to force the stepper to render after completing stepper
 
 	let paginationSettings = {
 		page: 0,
 		limit: size / 2,
 		size: totalObjects,
-		amounts: [1, 2, 3, 5, allDogs.length]
+		amounts: [allDogs.length]
 	} satisfies PaginationSettings;
 
 	$: paginationSettings.size = totalObjects;
@@ -61,6 +62,11 @@
 
 	function onBreedSelection(event: CustomEvent<AutocompleteOption<string>>): void {
 		inputChipList = [...inputChipList, event.detail.label];
+	}
+
+	function toggleSort() {
+		sortAscending = !sortAscending;
+		searchDogs();
 	}
 
 	function removeChip(breedName: string): void {
@@ -140,7 +146,7 @@
 			});
 
 			if (!response.ok) goto('/login');
-			const data: Dog[] = await response.json();
+			const data: Dog[] = addMatchedFlag(await response.json());
 
 			if (clearData) {
 				allDogs = data;
@@ -175,12 +181,11 @@
 	};
 
 	async function matchDog() {
-		const removedDogsIds = $removedDogs.map((dog) => dog.id);
 		const favoriteDogsIds = $favoriteDogs
-			.filter((dog) => !removedDogsIds.includes(dog.id))
+			.filter((dog) => dog.isFavorite === true)
 			.map((dog) => dog.id);
 		const dogIdMatch = await getMatch(favoriteDogsIds);
-		matchedDog = $favoriteDogs.filter((dog) => dog.id == dogIdMatch)[0];
+		matchedDog = $favoriteDogs.filter((dog) => dog.id === dogIdMatch)[0];
 	}
 
 	async function onNextHandler(e: {
@@ -194,8 +199,16 @@
 	function resetData() {
 		allDogs = [];
 		inputChipList = [];
-		forceStepRerender = true;
+		forceStepRerender = !forceStepRerender;
 		resetDogStores();
+	}
+
+	function addMatchedFlag(dogsList: Dog[]) {
+		const updatedWithMatchedFlag = dogsList.map((dog) => ({
+			...dog,
+			isFavorite: false
+		}));
+		return updatedWithMatchedFlag;
 	}
 </script>
 
@@ -235,9 +248,7 @@
 
 						<button
 							class="btn-icon variant-soft-primary rounded-md h-14 w-14"
-							on:click={() => {
-								sortAscending = !sortAscending;
-							}}
+							on:click={toggleSort}
 						>
 							{#if sortAscending}
 								<Icon
@@ -338,7 +349,7 @@
 						class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center mx-5 md:mx-10 lg:mx-20"
 					>
 						{#each paginatedSource as dogObject (dogObject.id)}
-							<DogCard {dogObject} favorite={false} />
+							<DogCard {dogObject} />
 						{/each}
 					</section>
 				{:else}
@@ -357,7 +368,7 @@
 					/>
 				</div>
 			</Step>
-			<Step buttonNextLabel="Match →" locked={$favoriteDogs.length == $removedDogs.length}>
+			<Step buttonNextLabel="Match →" locked={!$favoriteDogs.some((dog) => dog.isFavorite)}>
 				<svelte:fragment slot="header"
 					><header class="text-center mt-10 sm:mt-5">
 						<h1
@@ -371,11 +382,7 @@
 					class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center mx-5 md:mx-10 lg:mx-20"
 				>
 					{#each $favoriteDogs as dogObject}
-						{#if $removedDogs.some((dogObj) => JSON.stringify(dogObj) === JSON.stringify(dogObject))}
-							<DogCard {dogObject} favorite={false} inConfirmationStep={true}/>
-						{:else}
-							<DogCard {dogObject} favorite={true} inConfirmationStep={true}/>
-						{/if}
+						<DogCard {dogObject} inConfirmationStep={true} />
 					{/each}
 				</section>
 			</Step>
@@ -413,7 +420,7 @@
 				</svelte:fragment>
 				{#key matchedDog}
 					<section class="grid grid-cols-1">
-						<DogCard dogObject={matchedDog} favorite={false} showButtons={false} />
+						<DogCard dogObject={matchedDog} showButtons={false} />
 					</section>
 				{/key}
 			</Step>
