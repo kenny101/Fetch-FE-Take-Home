@@ -6,7 +6,7 @@
 	import { PUBLIC_API_URL } from '$env/static/public';
 	import Icon from '@iconify/svelte';
 	import DogImage from '$lib/assets/doggo.jpg';
-	import { favoriteDogs } from '$lib/user';
+	import { favoriteDogs, syncFavoriteDogs, addIsFavoriteFlag } from '$lib/user';
 	import { Confetti } from 'svelte-confetti';
 	import { Paginator, type PaginationSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
@@ -110,7 +110,7 @@
 			if (data.total) totalObjects = data.total;
 			if (data.next) nextPaginationQuery = data.next;
 
-			getDogs(data.resultIds, true);
+			allDogs = await getDogs(data.resultIds, true);
 			paginationSettings.page = 0;
 		} catch (error) {
 			console.error('Error:', error);
@@ -139,7 +139,7 @@
 
 			const data = await response.json();
 			if (data.next) nextPaginationQuery = data.next;
-			getDogs(data.resultIds, false);
+			allDogs = await getDogs(data.resultIds, false);
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -161,12 +161,14 @@
 
 			if (clearData) {
 				allDogs = data;
+				return data;
 			} else {
-				allDogs = [...allDogs, ...data];
+				return [...allDogs, ...data];
 			}
 		} catch (error) {
 			console.error('Error:', error);
 		}
+		return [];
 	};
 
 	const getMatch = async (listOfDogIds: string[]) => {
@@ -187,7 +189,6 @@
 		} catch (error) {
 			console.error('Error:', error);
 		}
-
 		return '';
 	};
 
@@ -202,7 +203,7 @@
 	async function onNextHandler(e: {
 		detail: { state: { current: number; total: number }; step: number };
 	}) {
-		syncFavoriteDogs();
+		syncFavoriteDogs($favoriteDogs);
 
 		if (e.detail.step == 1) {
 			await matchDog();
@@ -212,17 +213,7 @@
 	async function onBackHandler(e: {
 		detail: { state: { current: number; total: number }; step: number };
 	}) {
-		syncFavoriteDogs();
-	}
-
-	async function syncFavoriteDogs() {
-		let formData = new FormData();
-		formData.append('favoriteDogs', JSON.stringify($favoriteDogs));
-
-		fetch('?/sync', {
-			body: formData,
-			method: 'POST'
-		});
+		syncFavoriteDogs($favoriteDogs);
 	}
 
 	function resetData() {
@@ -230,15 +221,7 @@
 		inputChipList = [];
 		forceStepRerender = !forceStepRerender;
 		$favoriteDogs = [];
-		syncFavoriteDogs();
-	}
-
-	function addIsFavoriteFlag(dogsList: Dog[]) {
-		const updatedWithIsFavoriteFlag = dogsList.map((dog) => ({
-			...dog,
-			isFavorite: false
-		}));
-		return updatedWithIsFavoriteFlag;
+		syncFavoriteDogs($favoriteDogs);
 	}
 </script>
 

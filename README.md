@@ -45,7 +45,7 @@ brew install sqld-beta
 
 To check if you installed the db correctly, restart your terminal and run `sqld --version`.
 
-Run `sqld -d ./tmp/data.db --http-listen-addr=127.0.0.1:8080` to start the database. This will store your data locally in `/tmp/data.db`. Set `SECRET_DB_URL=http://127.0.0.1:8080` in your `.env` file.
+Run `sqld -d ./tmp/data.db --http-listen-addr=127.0.0.1:8080` to start the database. This will store your data locally in `./tmp/data.db`. Set `SECRET_DB_URL=http://127.0.0.1:8080` in your `.env` file.
 
 To interact with our database we are using <a href="https://orm.drizzle.team/">Drizzle ORM</a> which allows us to make type-safe calls to our database using TypeScript. (You can think of this as a TypeScript wrapper for SQL as it outputs SQL files which you can see in the `drizzle/migrations` folder). Run the npm commands to generate the schema and perform migrations to your database. Convienently, Drizzle comes with a user interface to display and interact with your SQL data.
 
@@ -60,15 +60,19 @@ npm run studio # (Optional) Starts the database UI on port :3333
 
 ## ✨ The Tech Behind the Stack ✨
 
-
 ### 🔮 Frontend
 - 🔗 [SvelteKit](https://kit.svelte.dev/)
-- 🎨 [Skeleton UI](https://www.skeleton.dev/)
+- 🎨 [Skeleton UI](https://www.skeleton.dev/) + [TailwindCSS](https://tailwindcss.com/)
+- 🐕 [Dog Pic Source Attribution: Created by Lum3n](https://www.pexels.com/photo/closeup-photo-of-brown-and-black-dog-face-406014/)
 
 ### ⚙️ Backend / Infrastructure
 - 🔺 [Vercel](https://vercel.com/)
 - 📁 [libSQL](https://github.com/tursodatabase/libsql) 
 - 🗄️ [Drizzle ORM](https://orm.drizzle.team)
+
+
+## Running Unit Tests 🧰
+Tests can be ran with `npm run test`. By default, SvelteKit comes with `Vitest` and `Playwright` used for unit testing. See `index.test.ts` and `tests` directory for testing.
 
 
 
