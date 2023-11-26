@@ -57,10 +57,6 @@ export const actions = {
 
     event.cookies.set("auth_token", token, {
       path: "/",
-      secure: true,
-      httpOnly: true,
-      sameSite: 'strict',
-      maxAge: 60 * 60
     });
 
     throw redirect(301, "/");

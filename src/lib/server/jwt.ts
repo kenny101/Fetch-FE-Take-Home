@@ -1,6 +1,7 @@
 import { SECRET_JWT_SECRET } from "$env/static/private";
 import { error } from "@sveltejs/kit";
 import * as jose from "jose";
+import { redirect } from "@sveltejs/kit";
 
 type JWTPayload = {
     name: string;
@@ -23,6 +24,7 @@ export const verifyAuthJWT = async (token: string) => {
         );
         return payload as JWTPayload;
     } catch {
+        redirect(302, 'login');
         throw error(401, "Invalid or missing JWT: Not Logged in");
     }
 };
