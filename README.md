@@ -22,7 +22,11 @@ A database has been integrated to this excercise making this a full-stack app! ð
 
 Lets start with the environment variables. First rename `.example.env` to `.env`.
 
-Since we are using JWT for authenticating the user's queries to our own database, we generate our own JWT secret. With node installed, run `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` and save this output to the .env variable `SECRET_JWT_SECRET`
+Since we are using JWT for authenticating the user's queries to our own database, we generate our own JWT secret. With node installed, run the command below and save this output to the .env variable `SECRET_JWT_SECRET`
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
 For deploying the production database, I used [Turso](https://turso.tech/) which uses [libSQL](https://github.com/tursodatabase/libsql) (a fork of SQLite) under the hood. (Interestingly, this is the same technology that Discord currently uses to store billions of messages. ðŸ¤¯)
 
