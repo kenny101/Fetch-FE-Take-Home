@@ -10,6 +10,8 @@
     Fetch Frontend Take-Home Exercise: Taking it Full-Stack 🚀 
 </h1>
 
+## ✨ [YouTube Video Demo](https://www.youtube.com/watch?v=SpvaOiun9jc) ✨
+
 ## Development Setup: 💻
 Install dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
