@@ -30,7 +30,7 @@ Since we are using JWT for authenticating the user's queries to our own database
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-For deploying the production database, I used [Turso](https://turso.tech/) which uses [libSQL](https://github.com/tursodatabase/libsql) (a fork of SQLite) under the hood. (Interestingly, this is the same technology that Discord currently uses to store billions of messages. 🤯)
+For deploying the production database, I used [Turso](https://turso.tech/) which uses [libSQL](https://github.com/tursodatabase/libsql) (a fork of SQLite) under the hood. 
 
 For development purposes, you can ignore the `SECRET_DB_AUTH_TOKEN` since it is only used in the production database with Turso.
 
