@@ -63,23 +63,23 @@
 		placement: 'bottom'
 	};
 
-	function onBreedSelection(event: CustomEvent<AutocompleteOption<string>>): void {
+	const onBreedSelection = (event: CustomEvent<AutocompleteOption<string>>) => {
 		inputChipList = [...inputChipList, event.detail.label];
 	}
 
-	function toggleSort() {
+	const toggleSort = () => {
 		sortAscending = !sortAscending;
 		searchDogs();
 	}
 
-	function removeChip(breedName: string): void {
+	const removeChip = (breedName: string) => {
 		inputChipList = inputChipList.filter((name) => name !== breedName);
-	}
+	};
 
-	function handleInput(event: Event) {
+	const handleInput = (event: Event) => {
 		const inputEvent = event as Event & { target: HTMLInputElement };
 		zipcode = inputEvent.target.value.replace(/\D/g, '').slice(0, 5);
-	}
+	};
 
 	const searchDogs = async () => {
 		try {
@@ -192,37 +192,37 @@
 		return '';
 	};
 
-	async function matchDog() {
+	const matchDog = async () => {
 		const favoriteDogsIds = $favoriteDogs
 			.filter((dog) => dog.isFavorite === true)
 			.map((dog) => dog.id);
 		const dogIdMatch = await getMatch(favoriteDogsIds);
 		matchedDog = $favoriteDogs.filter((dog) => dog.id === dogIdMatch)[0];
-	}
+	};
 
-	async function onNextHandler(e: {
+	const onNextHandler = async (e: {
 		detail: { state: { current: number; total: number }; step: number };
-	}) {
+	}) => {
 		syncFavoriteDogs($favoriteDogs);
 
 		if (e.detail.step == 1) {
 			await matchDog();
 		}
-	}
+	};
 
-	async function onBackHandler(e: {
+	const onBackHandler = (e: {
 		detail: { state: { current: number; total: number }; step: number };
-	}) {
+	}) => {
 		syncFavoriteDogs($favoriteDogs);
-	}
+	};
 
-	function resetData() {
+	const resetData = () => {
 		allDogs = [];
 		inputChipList = [];
 		forceStepRerender = !forceStepRerender;
 		$favoriteDogs = [];
 		syncFavoriteDogs($favoriteDogs);
-	}
+	};
 </script>
 
 {#key forceStepRerender}
