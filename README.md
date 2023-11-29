@@ -1,17 +1,17 @@
-<header align="center">
+<p align="center">
     <picture>
       <img src="https://github.com/kenny101/Fetch-FE-Take-Home/assets/53395124/8367efff-79be-4040-9485-bec7d12033e7" width="500" alt="Image of dog">
     </picture>
+</p>
 
-<h1>
+<h1 align="center">
     Fetch Frontend Take-Home Exercise: Taking it Full-Stack 🚀 
 </h1>
 
-<h2>
-    <a href="https://www.youtube.com/watch?v=SpvaOiun9jc" target="_blank" rel="noopener noreferrer"> </a> 
-    ✨ YouTube Video Demo ✨
+<h2 align="center">
+    <a href="https://www.youtube.com/watch?v=SpvaOiun9jc" target="_blank" rel="noopener noreferrer"> ✨ YouTube Video Demo ✨</a> 
+    
 </h2>
-</header>
 
 ## Development Setup: 💻
 
