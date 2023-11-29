@@ -1,18 +1,20 @@
-<p align="center">
-  <a href="https://t4stack.com" target="_blank" rel="noopener noreferrer">
+<header align="center">
     <picture>
       <img src="https://github.com/kenny101/Fetch-FE-Take-Home/assets/53395124/8367efff-79be-4040-9485-bec7d12033e7" width="500" alt="Image of dog">
     </picture>
-  </a>
-</p>
 
-<h1 align="center">
+<h1>
     Fetch Frontend Take-Home Exercise: Taking it Full-Stack 🚀 
 </h1>
 
-## ✨ [YouTube Video Demo](https://www.youtube.com/watch?v=SpvaOiun9jc) ✨
+<h2>
+    <a href="https://www.youtube.com/watch?v=SpvaOiun9jc" target="_blank" rel="noopener noreferrer"> </a> 
+    ✨ YouTube Video Demo ✨
+</h2>
+</header>
 
 ## Development Setup: 💻
+
 Install dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
 ```bash
@@ -30,7 +32,7 @@ Since we are using JWT for authenticating the user's queries to our own database
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-For deploying the production database, I used [Turso](https://turso.tech/) which uses [libSQL](https://github.com/tursodatabase/libsql) (a fork of SQLite) under the hood. 
+For deploying the production database, I used [Turso](https://turso.tech/) which uses [libSQL](https://github.com/tursodatabase/libsql) (a fork of SQLite) under the hood.
 
 For development purposes, you can ignore the `SECRET_DB_AUTH_TOKEN` since it is only used in the production database with Turso.
 
@@ -63,25 +65,20 @@ npm run studio # (Optional) Starts the database UI on port :3333
 
 ![Drizzle Studio UI](https://github.com/kenny101/Fetch-FE-Take-Home/assets/53395124/598e1871-d8ed-4a91-acc3-e0c7c1817554)
 
-
 ## ✨ The Tech Behind the Stack ✨
 
 ### 🔮 Frontend
+
 - 🔗 [SvelteKit](https://kit.svelte.dev/)
 - 🎨 [Skeleton UI](https://www.skeleton.dev/) + [TailwindCSS](https://tailwindcss.com/)
 - 🐕 [Dog Pic Source Attribution: Created by Lum3n](https://www.pexels.com/photo/closeup-photo-of-brown-and-black-dog-face-406014/)
 
 ### ⚙️ Backend / Infrastructure
+
 - 🔺 [Vercel](https://vercel.com/)
-- 📁 [libSQL](https://github.com/tursodatabase/libsql) 
+- 📁 [libSQL](https://github.com/tursodatabase/libsql)
 - 🗄️ [Drizzle ORM](https://orm.drizzle.team)
 
-
 ## Running Unit Tests 🧰
+
 Tests can be ran with `npm run test`. By default, SvelteKit comes with `Vitest` and `Playwright` used for unit testing. See `index.test.ts` and `tests` directory for testing.
-
-
-
-
-
-

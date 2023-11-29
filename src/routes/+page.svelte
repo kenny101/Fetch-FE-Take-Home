@@ -65,12 +65,12 @@
 
 	const onBreedSelection = (event: CustomEvent<AutocompleteOption<string>>) => {
 		inputChipList = [...inputChipList, event.detail.label];
-	}
+	};
 
 	const toggleSort = () => {
 		sortAscending = !sortAscending;
 		searchDogs();
-	}
+	};
 
 	const removeChip = (breedName: string) => {
 		inputChipList = inputChipList.filter((name) => name !== breedName);
@@ -171,7 +171,7 @@
 		return [];
 	};
 
-	const getMatch = async (listOfDogIds: string[]) => {
+	const getMatchId = async (listOfDogIds: string[]) => {
 		try {
 			const response = await fetch(`${PUBLIC_API_URL}/dogs/match`, {
 				method: 'POST',
@@ -196,7 +196,7 @@
 		const favoriteDogsIds = $favoriteDogs
 			.filter((dog) => dog.isFavorite === true)
 			.map((dog) => dog.id);
-		const dogIdMatch = await getMatch(favoriteDogsIds);
+		const dogIdMatch = await getMatchId(favoriteDogsIds);
 		matchedDog = $favoriteDogs.filter((dog) => dog.id === dogIdMatch)[0];
 	};
 
