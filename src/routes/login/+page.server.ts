@@ -27,7 +27,7 @@ export const actions = {
     }
 
     // check if the user exists and create new user if not exists
-    const user = await db
+    let user = await db
       .select({
         email: usersTable.email,
         name: usersTable.name,
@@ -37,22 +37,19 @@ export const actions = {
       .where(and(eq(usersTable.email, formData.email), eq(usersTable.name, formData.name)))
       .limit(1);
 
-    let userId: number = 0;
-    if (user.length) userId = user[0].id;
-
-    if (user.length === 0) {
-      const newUser = await db.insert(usersTable).values({
+    if (user.length == 0) {
+      user = await db.insert(usersTable).values({
         email: formData.email,
         name: formData.name,
       }).returning();
-      userId = newUser[0].id;
     }
+
 
     // create the JWT
     const token = await createAuthJWT({
       name: formData.name,
       email: formData.email,
-      id: userId
+      id: user[0].id
     });
 
     event.cookies.set("auth_token", token, {

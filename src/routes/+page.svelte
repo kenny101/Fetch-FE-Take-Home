@@ -7,9 +7,9 @@
 	import Icon from '@iconify/svelte';
 	import DogImage from '$lib/assets/doggo.jpg';
 	import { favoriteDogs, syncFavoriteDogs, addIsFavoriteFlag } from '$lib/user';
-	import { Confetti } from 'svelte-confetti';
 	import { Paginator, type PaginationSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
+	import FullscreenConfetti from '$lib/components/FullscreenConfetti.svelte';
 
 	export let data: PageData;
 
@@ -293,21 +293,19 @@
 					/>
 				</div>
 				<div class="flex space-x-1 py-4 items-center justify-start overflow-x-auto overflow-hidden">
-					<div class="w-36">
-						<div
-							class="input-group input-group-divider grid-cols-[1fr_auto] h-8 rounded-full flex items-center w-36"
-						>
-							<div class="input-group-shim h-full"><Icon icon="tabler:zip"></Icon></div>
-							<input
-								bind:value={zipcode}
-								on:input={handleInput}
-								inputmode="numeric"
-								placeholder="Zipcode"
-								class="p-2 w-full"
-								pattern="\d{5}"
-								maxlength="5"
-							/>
-						</div>
+					<div
+						class="input-group input-group-divider grid-cols-[1fr_auto] h-8 rounded-full flex items-center w-36"
+					>
+						<div class="input-group-shim h-full"><Icon icon="tabler:zip"></Icon></div>
+						<input
+							bind:value={zipcode}
+							on:input={handleInput}
+							inputmode="numeric"
+							placeholder="Zipcode"
+							class="p-2 w-full"
+							pattern="\d{5}"
+							maxlength="5"
+						/>
 					</div>
 					<button class="btn variant-ghost-surface h-8 w-36 rounded-full" use:popup={popupAge}>
 						<span>
@@ -401,28 +399,7 @@
 			{/if}
 		</Step>
 		<Step>
-			<div
-				style="
-					position: fixed;
-					top: -50px;
-					left: 0;
-					height: 100vh;
-					width: 100vw;
-					display: flex;
-					justify-content: center;
-					overflow: hidden;
-					pointer-events: none;"
-			>
-				<Confetti
-					x={[-5, 5]}
-					y={[0, 0.1]}
-					delay={[500, 2000]}
-					infinite
-					duration={5000}
-					amount={200}
-					fallDistance="100vh"
-				/>
-			</div>
+			<FullscreenConfetti />
 			<svelte:fragment slot="header">
 				<header class="text-center mt-10 sm:mt-5">
 					<h1

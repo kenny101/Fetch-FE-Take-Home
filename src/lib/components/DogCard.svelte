@@ -35,15 +35,15 @@
 
 <div class="max-w-xl mx-auto mb-5 space-y-2 shadow-xl rounded-md">
 	<header class="text-center relative">
-		<button on:click={toggleFavorite}>
-			<img
-				src={img}
-				alt={`${breed}`}
-				class="rounded-md w-60 h-60 object-cover gradient-mask-b-60 hover:cursor-pointer"
-			/>
-		</button>
-
 		{#if showButtons}
+			<button on:click={toggleFavorite}>
+				<img
+					src={img}
+					alt={`${breed}`}
+					class="rounded-md w-60 h-60 object-cover gradient-mask-b-60 hover:cursor-pointer"
+				/>
+			</button>
+
 			<div class="absolute bottom-0 left-3">
 				{#if isFavorite}
 					<button class="btn-icon variant-ghost-error" on:click={toggleFavorite}>
@@ -61,6 +61,12 @@
 					</button>
 				{/if}
 			</div>
+		{:else}
+			<img
+				src={img}
+				alt={`${breed}`}
+				class="rounded-md w-60 h-60 object-cover gradient-mask-b-60"
+			/>
 		{/if}
 	</header>
 
