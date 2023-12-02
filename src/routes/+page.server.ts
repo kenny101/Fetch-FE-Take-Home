@@ -1,6 +1,7 @@
 import { getAllFavoriteDogs, areDogsEqual, deleteDogFromDB, insertDogIntoDB } from "$lib/server/db.js";
 import { verifyAuthJWT } from "$lib/server/jwt.js";
 import { redirect } from "@sveltejs/kit";
+import { unique } from "drizzle-orm/mysql-core";
 
 
 export const load = async ({ cookies }) => {
@@ -12,7 +13,10 @@ export const load = async ({ cookies }) => {
 
     const userPayload = await verifyAuthJWT(token);
     const dogs = await getAllFavoriteDogs(userPayload.id);
-    return { favoriteDogs: dogs };
+    const uniqueDogs: Dog[] = Array.from(new Set(dogs.map(dog => dog.id)))
+        .map(id => dogs.find(d => d.id === id))
+        .filter(dog => dog !== undefined) as Dog[];
+    return { favoriteDogs: uniqueDogs };
 };
 
 export const actions = {

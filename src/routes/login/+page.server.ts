@@ -1,9 +1,15 @@
 import { db } from "$lib/server/db.js";
 import { usersTable } from "$lib/server/schema.js";
-import { error, redirect } from "@sveltejs/kit";
+import { error, fail, redirect } from "@sveltejs/kit";
 import { eq, and } from "drizzle-orm";
 import { createAuthJWT } from "$lib/server/jwt.js";
+import { z } from "zod";
+import { superValidate } from "sveltekit-superforms/server";
 
+const userLoginSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email()
+})
 
 export const load = async (event) => {
   // get the sessionId from the cookie
@@ -13,17 +19,21 @@ export const load = async (event) => {
   if (token && token !== "") {
     throw redirect(301, "/");
   }
+
+  const form = await superValidate(event, userLoginSchema);
+
+  return {
+    form
+  }
 };
 
 export const actions = {
   default: async (event) => {
-    const formData = Object.fromEntries(await event.request.formData()) as {
-      email: string;
-      name: string;
-    };
+    const form = await superValidate(event, userLoginSchema);
+    console.log("form:", form);
 
-    if (!formData.email || !formData.name) {
-      throw error(400, "must provide name and email");
+    if (!form.valid) {
+      return fail(400, { form })
     }
 
     // check if the user exists and create new user if not exists
@@ -34,26 +44,27 @@ export const actions = {
         id: usersTable.id
       })
       .from(usersTable)
-      .where(and(eq(usersTable.email, formData.email), eq(usersTable.name, formData.name)))
+      .where(and(eq(usersTable.email, form.data.email), eq(usersTable.name, form.data.name)))
       .limit(1);
 
-    if (user.length == 0) {
+    if (!user.length) {
       user = await db.insert(usersTable).values({
-        email: formData.email,
-        name: formData.name,
+        email: form.data.email,
+        name: form.data.name,
       }).returning();
     }
 
-
-    // create the JWT
     const token = await createAuthJWT({
-      name: formData.name,
-      email: formData.email,
+      name: form.data.name,
+      email: form.data.email,
       id: user[0].id
     });
 
     event.cookies.set("auth_token", token, {
       path: "/",
+      secure: true,
+      httpOnly: true,
+      maxAge: 60 * 60 * 2,
     });
 
     throw redirect(301, "/");

@@ -8,7 +8,7 @@
 
 	let { name, img, age, zip_code, breed, id, isFavorite } = dogObject;
 
-	function toggleFavorite() {
+	const toggleFavorite = () => {
 		isFavorite = !isFavorite;
 
 		// Prevent removing dog from favoriteDogs if in confirmation step
@@ -25,15 +25,15 @@
 		} else {
 			$favoriteDogs = $favoriteDogs.filter((dogObject) => dogObject.id !== id);
 		}
-	}
+	};
 
-	function removeDog() {
+	const removeDog = () => {
 		dogObject.isFavorite = false;
 		$favoriteDogs = $favoriteDogs.filter((dogObject) => dogObject.id !== id);
-	}
+	};
 </script>
 
-<div class="max-w-xl mx-auto mb-5 space-y-2 shadow-xl rounded-md">
+<li class="max-w-xl mx-auto mb-5 space-y-2 shadow-xl rounded-md">
 	<header class="text-center relative">
 		{#if showButtons}
 			<button on:click={toggleFavorite}>
@@ -87,4 +87,4 @@
 			</p>
 		</div>
 	</section>
-</div>
+</li>

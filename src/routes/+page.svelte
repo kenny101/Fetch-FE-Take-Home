@@ -1,6 +1,13 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Autocomplete, RangeSlider, Step, Stepper, popup } from '@skeletonlabs/skeleton';
+	import {
+		Autocomplete,
+		ProgressRadial,
+		RangeSlider,
+		Step,
+		Stepper,
+		popup
+	} from '@skeletonlabs/skeleton';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 	import DogCard from '$lib/components/DogCard.svelte';
 	import { PUBLIC_API_URL } from '$env/static/public';
@@ -15,47 +22,39 @@
 
 	if (data.favoriteDogs) $favoriteDogs = data.favoriteDogs;
 
+
 	let inputBreed: string = '';
 	let inputChipList: string[] = [];
 	let allDogs: Dog[] = [];
 	let size: number = 50;
 	let nextPaginationQuery: string = '';
-	let totalObjects: number = 0;
 	let sortAscending: boolean = true;
 	let maxAge: number = 25;
 	let zipcode: string = '';
-	let showAlert: boolean = false;
 	let searchMessage: string = 'Search for results.';
-	let matchedDog: Dog = {
-		id: '',
-		img: '',
-		name: '',
-		age: 0,
-		zip_code: '',
-		breed: '',
-		isFavorite: false
-	};
-	let forceStepRerender: boolean = false; // Toggle to force <Stepper/> to render
-
+	let matchedDog: Promise<Dog | undefined>;
+	let forceStepRerender: boolean = false; // Toggle to force <Stepper /> to rerender
 	let paginationSettings = {
 		page: 0,
 		limit: size / 2,
-		size: totalObjects,
+		size: 0,
 		amounts: [allDogs.length]
 	} satisfies PaginationSettings;
 	let currentPage: number = 0;
+	let isSearching: boolean = false; // Used to display spinner while fetching for dogs
 
-	$: paginationSettings.size = totalObjects;
-	$: paginationSettings.page = 0;
 	$: paginatedSource = allDogs.slice(
 		paginationSettings.page * paginationSettings.limit,
 		paginationSettings.page * paginationSettings.limit + paginationSettings.limit
 	);
+	$: showAlert = zipcode.length != 0 && zipcode.length < 5;
 
-	const breedOptions: AutocompleteOption<string>[] | undefined = data.breeds?.map((breed) => ({
-		label: breed,
-		value: breed
-	}));
+	const breedOptions: AutocompleteOption<string>[] = data.breeds
+		? data.breeds.map((breed) => ({
+				label: breed,
+				value: breed
+		  }))
+		: [];
 
 	const popupAge: PopupSettings = {
 		event: 'click',
@@ -67,9 +66,13 @@
 		inputChipList = [...inputChipList, event.detail.label];
 	};
 
-	const toggleSort = () => {
+	const toggleSort = async () => {
 		sortAscending = !sortAscending;
-		searchDogs();
+		isSearching = true;
+		const queriedDogs = await searchDogs();
+		isSearching = false;
+		allDogs = queriedDogs ? queriedDogs : [];
+		paginationSettings.page = 0;
 	};
 
 	const removeChip = (breedName: string) => {
@@ -91,61 +94,45 @@
 				inputChipList.length && inputChipList.length > 0
 					? `breeds=${inputChipList.join('&breeds=')}`
 					: '';
-			showAlert = zipcode.length != 0 && zipcode.length < 5;
-
-			let queryUrl = `${PUBLIC_API_URL}/dogs/search?${breedsParams}${sortBreedParam}${maxAgeParam}${zipcodeParam}${sizeParam}`;
+			const queryUrl = `${PUBLIC_API_URL}/dogs/search?${breedsParams}${sortBreedParam}${maxAgeParam}${zipcodeParam}${sizeParam}`;
 
 			const response = await fetch(queryUrl, {
 				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				credentials: 'include'
 			});
 
 			if (!response.ok) goto('/logout');
 
 			const data = await response.json();
 			if (data.total == 0) searchMessage = 'No results found with specified filter.';
-			if (data.total) totalObjects = data.total;
+			if (data.total) paginationSettings.size = data.total;
 			if (data.next) nextPaginationQuery = data.next;
 
-			allDogs = await getDogs(data.resultIds, true);
-			paginationSettings.page = 0;
+			const dogs = await getDogs(data.resultIds, false);
+			return dogs;
 		} catch (error) {
 			console.error('Error:', error);
 		}
 	};
 
 	const fetchNext = async () => {
-		// Don't fetch on back button
-		if (paginationSettings.page - currentPage != 1) {
-			currentPage = paginationSettings.page;
-			return;
-		}
-
-		currentPage = paginationSettings.page;
-
 		try {
 			const queryUrl = `${PUBLIC_API_URL}${nextPaginationQuery}`;
 			const response = await fetch(queryUrl, {
 				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				credentials: 'include'
 			});
 			if (!response.ok) goto('/logout');
 
 			const data = await response.json();
 			if (data.next) nextPaginationQuery = data.next;
-			allDogs = await getDogs(data.resultIds, false);
+			allDogs = await getDogs(data.resultIds, true);
 		} catch (error) {
 			console.error('Error:', error);
 		}
 	};
 
-	const getDogs = async (listOfDogIds: string[], clearData: boolean) => {
+	const getDogs = async (listOfDogIds: string[], appendDogs: boolean) => {
 		try {
 			const response = await fetch(`${PUBLIC_API_URL}/dogs`, {
 				method: 'POST',
@@ -159,11 +146,10 @@
 			if (!response.ok) goto('/logout');
 			const data: Dog[] = addIsFavoriteFlag(await response.json());
 
-			if (clearData) {
-				allDogs = data;
-				return data;
-			} else {
+			if (appendDogs) {
 				return [...allDogs, ...data];
+			} else {
+				return data;
 			}
 		} catch (error) {
 			console.error('Error:', error);
@@ -171,7 +157,10 @@
 		return [];
 	};
 
-	const getMatchId = async (listOfDogIds: string[]) => {
+	const getMatchedDog = async () => {
+		const listOfDogIds = $favoriteDogs
+			.filter((dog) => dog.isFavorite === true)
+			.map((dog) => dog.id);
 		try {
 			const response = await fetch(`${PUBLIC_API_URL}/dogs/match`, {
 				method: 'POST',
@@ -184,20 +173,11 @@
 
 			if (!response.ok) goto('/logout');
 			const data: Match = await response.json();
-			const dogMatchId: string = data.match;
-			return dogMatchId;
+			return $favoriteDogs.filter((dog) => dog.id === data.match)[0];
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return '';
-	};
-
-	const matchDog = async () => {
-		const favoriteDogsIds = $favoriteDogs
-			.filter((dog) => dog.isFavorite === true)
-			.map((dog) => dog.id);
-		const dogIdMatch = await getMatchId(favoriteDogsIds);
-		matchedDog = $favoriteDogs.filter((dog) => dog.id === dogIdMatch)[0];
+		return;
 	};
 
 	const onNextHandler = async (e: {
@@ -206,7 +186,7 @@
 		syncFavoriteDogs($favoriteDogs);
 
 		if (e.detail.step == 1) {
-			await matchDog();
+			matchedDog = getMatchedDog();
 		}
 	};
 
@@ -216,11 +196,30 @@
 		syncFavoriteDogs($favoriteDogs);
 	};
 
+	const onPaginateChange = () => {
+		// Don't fetch on back button
+		if (paginationSettings.page - currentPage != 1) {
+			currentPage = paginationSettings.page;
+			return;
+		}
+		currentPage = paginationSettings.page;
+		fetchNext();
+	};
+
+	const searchButtonClicked = async () => {
+		isSearching = true;
+		const queriedDogs = await searchDogs();
+		isSearching = false;
+		allDogs = queriedDogs ? queriedDogs : [];
+		paginationSettings.page = 0;
+	};
+
 	const resetData = () => {
 		allDogs = [];
 		inputChipList = [];
 		forceStepRerender = !forceStepRerender;
 		$favoriteDogs = [];
+		paginationSettings.size = 0;
 		syncFavoriteDogs($favoriteDogs);
 	};
 </script>
@@ -233,15 +232,13 @@
 		on:complete={resetData}
 		on:back={onBackHandler}
 	>
-		<input type="text" hidden name="favoriteDogs" value="${$favoriteDogs}" />
-
 		<Step buttonNextLabel="Confirm Matches →" locked={$favoriteDogs.length == 0}>
 			<svelte:fragment slot="header">
 				<header class="text-center">
 					<h1
 						class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500"
 					>
-						Finding Your New Best Friend Starts With Fetch
+						Finding Your New Best Friend Starts with a Fetch
 					</h1>
 					<img src={DogImage} alt="dog peeking out" class="mx-auto h-60 object-cover" />
 				</header>
@@ -249,12 +246,14 @@
 			<section class="mb-10 md:mx-20 sm:mx-10">
 				<div class="input-group grid-cols-[1fr_auto_auto] space-x-1">
 					<input
-						class="input autocomplete p-1 rounded-lg font-bold text-primary-500"
+						class="input autocomplete py-1 px-3 rounded-lg font-bold text-primary-500"
 						type="text"
 						placeholder="Search By Dog Breed..."
 						bind:value={inputBreed}
 					/>
-					<button class="btn-icon variant-soft-primary rounded-md h-14 w-14" on:click={searchDogs}
+					<button
+						class="btn-icon variant-soft-primary rounded-md h-14 w-14"
+						on:click={searchButtonClicked}
 						><Icon
 							icon="material-symbols:search-rounded"
 							class="text-4xl text-primary-500"
@@ -273,25 +272,26 @@
 					</button>
 				</div>
 
-				<div class="my-2 space-x-1 space-y-1">
+				<ul class="my-2 space-x-1 space-y-1">
 					{#each inputChipList as breedName}
-						<button class="chip variant-soft hover:variant-filled">
+						<li class="chip variant-soft hover:variant-filled">
 							<button on:click={() => removeChip(breedName)}
 								><Icon icon="material-symbols:close-rounded" /></button
 							>
 							<span>{breedName}</span>
-						</button>
+						</li>
 					{/each}
-				</div>
+				</ul>
 
-				<div class="card max-h-48 p-4 overflow-y-auto">
+				<section class="card max-h-48 p-4 overflow-y-auto">
 					<Autocomplete
 						bind:input={inputBreed}
 						options={breedOptions}
 						on:selection={onBreedSelection}
 						denylist={inputChipList}
 					/>
-				</div>
+				</section>
+
 				<div class="flex space-x-1 py-4 items-center justify-start overflow-x-auto overflow-hidden">
 					<div
 						class="input-group input-group-divider grid-cols-[1fr_auto] h-8 rounded-full flex items-center w-36"
@@ -314,7 +314,15 @@
 						<span>Max Age: {maxAge}yr</span>
 					</button>
 				</div>
-
+				<div class="card p-4 w-72 shadow-xl z-10" data-popup="popupAge">
+					<RangeSlider name="range-slider" bind:value={maxAge} max={25} step={1} min={1} ticked>
+						<div class="flex justify-between items-center">
+							<div class="font-bold">Max Age</div>
+							<div class="text-md">{maxAge} years</div>
+						</div>
+					</RangeSlider>
+					<div class="arrow bg-surface-100-800-token" />
+				</div>
 				{#if showAlert}
 					<aside class="alert variant-soft">
 						<Icon icon="icon-park-solid:caution" class="h3 mx-5" />
@@ -337,26 +345,20 @@
 						</div>
 					</aside>
 				{/if}
-
-				<div class="card p-4 w-72 shadow-xl z-10" data-popup="popupAge">
-					<RangeSlider name="range-slider" bind:value={maxAge} max={25} step={1} min={1} ticked>
-						<div class="flex justify-between items-center">
-							<div class="font-bold">Max Age</div>
-							<div class="text-md">{maxAge} years</div>
-						</div>
-					</RangeSlider>
-					<div class="arrow bg-surface-100-800-token" />
-				</div>
 			</section>
 
-			{#if paginatedSource.length}
-				<section
-					class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center mx-5 md:mx-10 lg:mx-20"
+			{#if isSearching}
+				<p class="h2 flex items-center justify-center font-semibold text-primary-400 h-60 gap-5">
+					<ProgressRadial width="w-10" /> Fetching results ...
+				</p>
+			{:else if paginatedSource.length}
+				<ul
+					class="max-w-screen-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center"
 				>
 					{#each paginatedSource as dogObject (dogObject.id)}
 						<DogCard {dogObject} />
 					{/each}
-				</section>
+				</ul>
 			{:else}
 				<p class="h2 flex items-center justify-center font-semibold text-primary-400 h-60">
 					{searchMessage}
@@ -366,7 +368,7 @@
 			<div class="flex items-center justify-center">
 				<Paginator
 					bind:settings={paginationSettings}
-					on:page={fetchNext}
+					on:page={onPaginateChange}
 					showFirstLastButtons={false}
 					showPreviousNextButtons={true}
 					select="hidden"
@@ -385,35 +387,51 @@
 			</svelte:fragment>
 
 			{#if $favoriteDogs.length}
-				<section
-					class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center mx-5 md:mx-10 lg:mx-20"
+				<ul
+					class="max-w-screen-2xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center mx-5 md:mx-10 lg:mx-20"
 				>
 					{#each $favoriteDogs as dogObject (dogObject.id)}
 						<DogCard {dogObject} inConfirmationStep={true} />
 					{/each}
-				</section>
+				</ul>
 			{:else}
 				<p class="h2 flex items-center justify-center font-semibold text-primary-400 h-60">
 					Add at least one dog to match.
 				</p>
 			{/if}
 		</Step>
-		<Step>
-			<FullscreenConfetti />
-			<svelte:fragment slot="header">
+		<Step regionHeader="hidden">
+			{#await matchedDog}
+				<header class="text-center mt-10 sm:mt-5">
+					<h1
+						class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500 flex items-center justify-center gap-5 "
+					>
+						<ProgressRadial width="w-10" /> Fetching your match
+					</h1>
+				</header>
+			{:then dog}
+				<FullscreenConfetti />
 				<header class="text-center mt-10 sm:mt-5">
 					<h1
 						class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500"
 					>
-						Congrats! <br /> You've Matched With {matchedDog.name}.
+						Congrats! <br /> You've Matched With {dog?.name}.
 					</h1>
 				</header>
-			</svelte:fragment>
-			{#key matchedDog}
-				<section class="grid grid-cols-1">
-					<DogCard dogObject={matchedDog} showButtons={false} />
-				</section>
-			{/key}
+				<ul class="grid grid-cols-1">
+					{#if dog}
+						<DogCard dogObject={dog} showButtons={false} />
+					{/if}
+				</ul>
+			{:catch _}
+				<header class="text-center mt-10 sm:mt-5">
+					<h1
+						class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500 flex justify-between items-center"
+					>
+						There was an issue with our server. Please try again later.
+					</h1>
+				</header>
+			{/await}
 		</Step>
 	</Stepper>
 {/key}
