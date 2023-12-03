@@ -36,7 +36,7 @@ For deploying the production database, I used [Turso](https://turso.tech/) which
 
 For development purposes, you can ignore the `SECRET_DB_AUTH_TOKEN` since it is only used in the production database with Turso.
 
-To run the database locally, install the libSQL from their [releases page](https://github.com/libsql/sqld/releases/tag/v0.21.9). You can use the installation script to install libSQL below. After installing, take note of the installation path and add it to your `PATH` environment variables. (MacOs/Linux/WSL only)
+To run the database locally, install the libSQL from their [releases page](https://github.com/libsql/sqld/releases/tag/v0.21.9). You can use the installation script to install libSQL below. After installing, take note of the installation path and add it to your `PATH` environment variables. (MacOS/Linux/WSL only). You can also install and run with the [Docker Container](https://github.com/tursodatabase/libsql/pkgs/container/libsql-server).
 
 ```bash
 curl -fsSL https://github.com/libsql/sqld/releases/download/v0.21.9/sqld-installer.sh -o sqld-installer.sh
@@ -67,17 +67,19 @@ npm run studio # (Optional) Starts the database UI on port :3333
 
 ## ✨ The Tech Behind the Stack ✨
 
-### 🔮 Frontend
-
+### 🔮 Frontend / Libraries
 - 🔗 [SvelteKit](https://kit.svelte.dev/)
 - 🎨 [Skeleton UI](https://www.skeleton.dev/) + [TailwindCSS](https://tailwindcss.com/)
+- 🔺 [SuperForms](https://vercel.com/) Client/Server [Zod](https://zod.dev/) Form Validation
+- 😄 [Iconify](https://iconify.design/) Icon Library
 - 🐕 [Dog Pic Source Attribution: Created by Lum3n](https://www.pexels.com/photo/closeup-photo-of-brown-and-black-dog-face-406014/)
 
-### ⚙️ Backend / Infrastructure
 
-- 🔺 [Vercel](https://vercel.com/)
-- 📁 [libSQL](https://github.com/tursodatabase/libsql)
-- 🗄️ [Drizzle ORM](https://orm.drizzle.team)
+### ⚙️ Backend / Infrastructure
+- 🔺 [Vercel](https://vercel.com/): SvelteKit Server Deployment
+- 📁 [libSQL](https://github.com/tursodatabase/libsql): SQLite Database
+- 🗄️ [Drizzle ORM](https://orm.drizzle.team): TypeScript SQL ORM
+- 🗃 [Turso](https://turso.tech/): Server Deployment
 
 ## Running Unit Tests 🧰
 
