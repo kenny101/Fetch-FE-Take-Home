@@ -1,8 +1,6 @@
 import { getAllFavoriteDogs, areDogsEqual, deleteDogFromDB, insertDogIntoDB } from "$lib/server/db.js";
 import { verifyAuthJWT } from "$lib/server/jwt.js";
 import { redirect } from "@sveltejs/kit";
-import { unique } from "drizzle-orm/mysql-core";
-
 
 export const load = async ({ cookies }) => {
     const token = cookies.get("auth_token");

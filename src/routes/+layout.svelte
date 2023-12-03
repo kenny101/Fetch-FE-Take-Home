@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AppBar, AppShell } from '@skeletonlabs/skeleton';
+	import { AppBar, AppShell, Toast } from '@skeletonlabs/skeleton';
 	import '../app.pcss';
 	import FetchLogo from '$lib/assets/fetch-logo.svg';
 	import { PUBLIC_API_URL } from '$env/static/public';
@@ -7,7 +7,10 @@
 	import { page } from '$app/stores';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
+	import { initializeStores } from '@skeletonlabs/skeleton';
+	initializeStores();
 	
+
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	const logoutAction = async () => {
@@ -30,7 +33,7 @@
 	<title>Fetch</title>
 </svelte:head>
 
-<main class="flex flex-col min-h-screen bg-gradient-to-br">
+<main class="flex flex-col min-h-screen">
 	<AppShell class="flex-grow">
 		<AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
 			<svelte:fragment slot="lead">
@@ -60,4 +63,6 @@
 			</ul>
 		</div>
 	</footer>
+
+	<Toast />
 </main>

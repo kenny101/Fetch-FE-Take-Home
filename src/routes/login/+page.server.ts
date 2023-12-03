@@ -3,16 +3,11 @@ import { usersTable } from "$lib/server/schema.js";
 import { error, fail, redirect } from "@sveltejs/kit";
 import { eq, and } from "drizzle-orm";
 import { createAuthJWT } from "$lib/server/jwt.js";
-import { z } from "zod";
-import { superValidate } from "sveltekit-superforms/server";
-
-const userLoginSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email()
-})
+import { userLoginSchema } from "$lib/schemas/formSchemas.js";
+import { message, setError, superValidate } from "sveltekit-superforms/server";
 
 export const load = async (event) => {
-  // get the sessionId from the cookie
+  // get the token from the cookie
   const token = event.cookies.get("auth_token");
 
   // if there is a token, redirect to the user page
@@ -30,10 +25,17 @@ export const load = async (event) => {
 export const actions = {
   default: async (event) => {
     const form = await superValidate(event, userLoginSchema);
-    console.log("form:", form);
 
     if (!form.valid) {
-      return fail(400, { form })
+      return message(form, 'Invalid form');
+    }
+
+    const userGivenEmail = await db.select({ email: usersTable.email, name: usersTable.name }).from(usersTable).where(eq(usersTable.email, form.data.email)).limit(1);
+
+    if (userGivenEmail[0]) {
+      if (userGivenEmail[0].name !== form.data.name) {
+        return setError(form, 'email', 'Email already exists with a different a name.');
+      }
     }
 
     // check if the user exists and create new user if not exists
@@ -65,9 +67,8 @@ export const actions = {
       secure: true,
       httpOnly: true,
       maxAge: 60 * 60 * 2,
+      sameSite: 'strict'
     });
-
-    throw redirect(301, "/");
   },
 };
 

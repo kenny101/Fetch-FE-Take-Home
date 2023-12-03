@@ -2,14 +2,21 @@
 	import { goto } from '$app/navigation';
 	import { PUBLIC_API_URL } from '$env/static/public';
 	import DogImage from '$lib/assets/doggo.jpg';
-	import { enhance } from '$app/forms';
 	import { superForm } from 'sveltekit-superforms/client';
-	import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { userLoginSchema } from '$lib/schemas/formSchemas.js';
 	import Icon from '@iconify/svelte';
+	// import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
 	export let data;
-	const { form, errors } = superForm(data.form);
+
+	const { form, errors, enhance, message, delayed, capture, restore } = superForm(data.form, {
+		validators: userLoginSchema,
+		taintedMessage: null
+	});
+
+	export const snapshot = { capture, restore };
+
 	let isLoading: boolean = false;
 
 	const handleLogin = async (name: string, email: string) => {
@@ -44,9 +51,14 @@
 </header>
 
 <section class="card p-6 shadow-xl text-left max-w-xl mx-auto">
-	<SuperDebug data={$form} />
+	<!-- <SuperDebug data={$form} /> -->
 
-	<form class="space-y-4" method="POST" use:enhance={() => handleLogin($form.name, $form.email)}>
+	<form
+		class="space-y-4"
+		method="POST"
+		use:enhance
+		on:submit={() => handleLogin($form.name, $form.email)}
+	>
 		<label class="label" for="name"
 			>Name
 			<input
@@ -56,12 +68,12 @@
 				type="name"
 				placeholder="John Doe"
 				class="input p-1"
+				aria-invalid={$errors.name ? 'true' : undefined}
 				required
 			/>
 			{#if $errors.name}
-				<small>{$errors.name}</small>
+				<small class="text-error-500">{$errors.name}</small>
 			{/if}
-			<small></small>
 		</label>
 
 		<label class="label" for="email"
@@ -73,28 +85,34 @@
 				id="email"
 				placeholder="email@example.com"
 				class="input p-1"
+				aria-invalid={$errors.email ? 'true' : undefined}
 				required
 			/>
 			{#if $errors.email}
-				<small>{$errors.email}</small>
+				<small class="text-error-500">{$errors.email}</small>
 			{/if}
 		</label>
 
-		{#if $errors.name}
+		{#if $message}
 			<aside class="alert variant-soft">
 				<Icon icon="icon-park-solid:caution" class="h3 mx-5" />
 				<div class="alert-message">
-					<p>Unable to login</p>
+					<p>Unable to login: {$message}</p>
 				</div>
 			</aside>
 		{/if}
 
-		{#if isLoading}
-			<button type="submit" disabled class="btn variant-filled-primary w-full"
-				>Logging In &nbsp;<ProgressRadial width="w-5" meter="stroke-primary-50" /></button
-			>
-		{:else}
-			<button type="submit" class="btn variant-filled-primary w-full">Login </button>
-		{/if}
+		<button
+			type="submit"
+			disabled={$delayed || isLoading}
+			class="btn variant-filled-primary w-full"
+		>
+			{#if $delayed || isLoading}
+				Logging In &nbsp;
+				<ProgressRadial width="w-5" meter="stroke-primary-50" />
+			{:else}
+				Login
+			{/if}
+		</button>
 	</form>
 </section>
