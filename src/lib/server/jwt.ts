@@ -1,9 +1,9 @@
 import { SECRET_JWT_SECRET } from "$env/static/private";
-import jose from "jose";
-import { redirect, type RequestEvent} from "@sveltejs/kit";
+import { SignJWT, jwtVerify } from "jose";
+import { redirect, type RequestEvent } from "@sveltejs/kit";
 
 export const createAuthJWT = async (data: JWTPayload) => {
-    const jwt = await new jose.SignJWT(data)
+    const jwt = await new SignJWT(data)
         .setProtectedHeader({ alg: "HS256" })
         .setExpirationTime('2h')
         .sign(new TextEncoder().encode(SECRET_JWT_SECRET));
@@ -12,7 +12,7 @@ export const createAuthJWT = async (data: JWTPayload) => {
 
 export const verifyAuthJWT = async (token: string, event: RequestEvent): Promise<JWTPayload> => {
     try {
-        const { payload } = await jose.jwtVerify(
+        const { payload } = await jwtVerify(
             token,
             new TextEncoder().encode(SECRET_JWT_SECRET)
         );
