@@ -70,7 +70,7 @@ npm run studio # (Optional) Starts the database UI on port :3333
 ### 🔮 Frontend / Libraries
 - 🔗 [SvelteKit](https://kit.svelte.dev/)
 - 🎨 [Skeleton UI](https://www.skeleton.dev/) + [TailwindCSS](https://tailwindcss.com/)
-- 🔺 [SuperForms](https://vercel.com/) Client/Server [Zod](https://zod.dev/) Form Validation
+- ⚡ [SuperForms](https://superforms.rocks/) Client/Server [Zod](https://zod.dev/) Form Validation
 - 😄 [Iconify](https://iconify.design/) Icon Library
 - 🐕 [Dog Pic Source Attribution: Created by Lum3n](https://www.pexels.com/photo/closeup-photo-of-brown-and-black-dog-face-406014/)
 
