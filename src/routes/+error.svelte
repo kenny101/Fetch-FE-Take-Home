@@ -5,5 +5,5 @@
 <h1>
 	{$page.error?.message
 		? $page.error.message
-		: 'An unexpected error occurred please try again later.'}
+		: 'An unexpected error occurred please refresh or try again later.'}
 </h1>

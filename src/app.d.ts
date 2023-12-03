@@ -1,12 +1,20 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
-declare global {
-	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface Platform {}
-	}
+
+type JWTPayload = {
+    name: string;
+    email: string;
+    id: number
+};
+
+
+namespace App {
+    // interface Error {}
+    interface Locals {
+        user: JWTPayload;
+    }
+    // interface PageData {}
+    // interface Platform {}
 }
 
 interface Dog {

@@ -22,7 +22,6 @@
 
 	if (data.favoriteDogs) $favoriteDogs = data.favoriteDogs;
 
-
 	let inputBreed: string = '';
 	let inputChipList: string[] = [];
 	let allDogs: Dog[] = [];
@@ -294,7 +293,7 @@
 
 				<div class="flex space-x-1 py-4 items-center justify-start overflow-x-auto overflow-hidden">
 					<div
-						class="input-group input-group-divider grid-cols-[1fr_auto] h-8 rounded-full flex items-center w-36"
+						class="input-group input-group-divider grid-cols-[1fr_auto] h-8 rounded-full flex items-center flex-shrink-0 w-36"
 					>
 						<div class="input-group-shim h-full"><Icon icon="tabler:zip"></Icon></div>
 						<input
@@ -404,7 +403,7 @@
 			{#await matchedDog}
 				<header class="text-center mt-10 sm:mt-5">
 					<h1
-						class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500 flex items-center justify-center gap-5 "
+						class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500 flex items-center justify-center gap-5"
 					>
 						<ProgressRadial width="w-10" /> Fetching your match
 					</h1>

@@ -1,21 +1,12 @@
 import { db } from "$lib/server/db.js";
 import { usersTable } from "$lib/server/schema.js";
-import { error, fail, redirect } from "@sveltejs/kit";
 import { eq, and } from "drizzle-orm";
 import { createAuthJWT } from "$lib/server/jwt.js";
 import { userLoginSchema } from "$lib/schemas/formSchemas.js";
 import { message, setError, superValidate } from "sveltekit-superforms/server";
 
-export const load = async (event) => {
-  // get the token from the cookie
-  const token = event.cookies.get("auth_token");
-
-  // if there is a token, redirect to the user page
-  if (token && token !== "") {
-    throw redirect(301, "/");
-  }
-
-  const form = await superValidate(event, userLoginSchema);
+export const load = async ({cookies, request}) => {
+  const form = await superValidate(request, userLoginSchema);
 
   return {
     form
@@ -34,7 +25,7 @@ export const actions = {
 
     if (userGivenEmail[0]) {
       if (userGivenEmail[0].name !== form.data.name) {
-        return setError(form, 'email', 'Email already exists with a different a name.');
+        return setError(form, 'email', 'Email already exists with a different name.');
       }
     }
 
