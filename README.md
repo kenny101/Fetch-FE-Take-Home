@@ -1,6 +1,6 @@
 <p align="center">
     <picture>
-      <img src="https://github.com/kenny101/Fetch-FE-Take-Home/assets/53395124/8367efff-79be-4040-9485-bec7d12033e7" width="500" alt="Image of dog">
+      <img src="https://github.com/kenny101/Fetch-FE-Take-Home/assets/53395124/08cc9adf-1d61-4c6c-9a82-f6b012568cd1" width="500" alt="Image of dog">
     </picture>
 </p>
 
@@ -10,7 +10,6 @@
 
 <h2 align="center">
     <a href="https://www.youtube.com/watch?v=SpvaOiun9jc" target="_blank" rel="noopener noreferrer"> ✨ YouTube Video Demo ✨</a> 
-    
 </h2>
 
 ## Development Setup: 💻
