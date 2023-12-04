@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { PUBLIC_API_URL } from '$env/static/public';
 	import DogImage from '$lib/assets/doggo.jpg';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { userLoginSchema } from '$lib/schemas/formSchemas.js';
 	import Icon from '@iconify/svelte';
+	import { fetchLoginSession } from '$lib/utils.js';
 	// import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
 	export let data;
@@ -21,24 +20,7 @@
 
 	const handleLogin = async (name: string, email: string) => {
 		isLoading = true;
-		try {
-			const response = await fetch(`${PUBLIC_API_URL}/auth/login`, {
-				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ name, email })
-			});
-
-			if (response.ok) {
-				goto('/');
-			} else {
-				console.error('Authentication failed');
-			}
-		} catch (error) {
-			console.error('Error:', error);
-		}
+		await fetchLoginSession(name, email);
 		isLoading = false;
 	};
 </script>

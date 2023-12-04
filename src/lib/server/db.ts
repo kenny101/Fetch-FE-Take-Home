@@ -32,18 +32,6 @@ export async function getAllFavoriteDogs(user_id: number)  {
     return dogs;
 }
 
-export function areDogsEqual(dog1: Dog, dog2: Dog): boolean {
-    return (
-        dog1.id === dog2.id &&
-        dog1.img === dog2.img &&
-        dog1.name === dog2.name &&
-        dog1.age === dog2.age &&
-        dog1.zip_code === dog2.zip_code &&
-        dog1.breed === dog2.breed &&
-        dog1.isFavorite === dog2.isFavorite
-    );
-}
-
 export async function insertDogIntoDB(dog: Dog, user_id: number) {
     await db.insert(dogsTable).values({
         img: dog.img,
@@ -55,6 +43,25 @@ export async function insertDogIntoDB(dog: Dog, user_id: number) {
         dog_id: dog.id,
         user_id: user_id
     });
+}
+
+/**
+ * Checks if two dogs are equal, ignores the favorite attribut from `Dog`
+ *
+ * @param dog1 - first dog to check
+ * @param dog2 - second dog to check
+ * @returns True if dog attributes are equal, false otherwise.
+ */
+export function areDogsEqual(dog1: Dog, dog2: Dog): boolean {
+    return (
+        dog1.id === dog2.id &&
+        dog1.img === dog2.img &&
+        dog1.name === dog2.name &&
+        dog1.age === dog2.age &&
+        dog1.zip_code === dog2.zip_code &&
+        dog1.breed === dog2.breed && 
+        dog1.isFavorite == dog2.isFavorite
+    );
 }
 
 const client = createClient({ url: SECRET_DB_URL, authToken: SECRET_DB_AUTH_TOKEN });

@@ -17,6 +17,14 @@ namespace App {
     // interface Platform {}
 }
 
+interface DogSearchResult {
+    resultIds: string[];
+    total: number;
+    next?: string;
+    prev?: string;
+  }
+  
+
 interface Dog {
     id: string
     img: string
@@ -24,7 +32,7 @@ interface Dog {
     age: number
     zip_code: string
     breed: string
-    isFavorite: boolean // added additional bool flag for unfavoriting favorited dogs
+    isFavorite: boolean
 }
 
 interface Match {

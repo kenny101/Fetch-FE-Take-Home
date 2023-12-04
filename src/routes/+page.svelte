@@ -10,20 +10,19 @@
 	} from '@skeletonlabs/skeleton';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 	import DogCard from '$lib/components/DogCard.svelte';
-	import { PUBLIC_API_URL } from '$env/static/public';
 	import Icon from '@iconify/svelte';
 	import DogImage from '$lib/assets/doggo.jpg';
-	import { favoriteDogs, syncFavoriteDogs, addIsFavoriteFlag } from '$lib/user';
+	import { favoriteDogs, syncFavoriteDogs, fetchMatchedDogId, dogIsAFavoriteDog } from '$lib/utils';
 	import { Paginator, type PaginationSettings } from '@skeletonlabs/skeleton';
-	import { goto } from '$app/navigation';
 	import FullscreenConfetti from '$lib/components/FullscreenConfetti.svelte';
+	import { searchDogs, fetchNextDogs, fetchDogs } from '$lib/utils';
 
 	export let data: PageData;
 
 	if (data.favoriteDogs) $favoriteDogs = data.favoriteDogs;
 
 	let inputBreed: string = '';
-	let inputChipList: string[] = [];
+	let selectedBreeds: string[] = [];
 	let allDogs: Dog[] = [];
 	let size: number = 50;
 	let nextPaginationQuery: string = '';
@@ -31,13 +30,13 @@
 	let maxAge: number = 25;
 	let zipcode: string = '';
 	let searchMessage: string = 'Search for results.';
-	let matchedDog: Promise<Dog | undefined>;
+	let matchedDog: Promise<Dog>;
 	let forceStepRerender: boolean = false; // Toggle to force <Stepper /> to rerender
 	let paginationSettings = {
 		page: 0,
 		limit: size / 2,
 		size: 0,
-		amounts: [allDogs.length]
+		amounts: [0]
 	} satisfies PaginationSettings;
 	let currentPage: number = 0;
 	let isSearching: boolean = false; // Used to display spinner while fetching for dogs
@@ -62,134 +61,60 @@
 	};
 
 	const onBreedSelection = (event: CustomEvent<AutocompleteOption<string>>) => {
-		inputChipList = [...inputChipList, event.detail.label];
+		selectedBreeds = [...selectedBreeds, event.detail.label];
+		handleSearchDogs();
 	};
 
-	const toggleSort = async () => {
+	const toggleSort = () => {
 		sortAscending = !sortAscending;
-		isSearching = true;
-		const queriedDogs = await searchDogs();
-		isSearching = false;
-		allDogs = queriedDogs ? queriedDogs : [];
-		paginationSettings.page = 0;
+		handleSearchDogs();
 	};
 
 	const removeChip = (breedName: string) => {
-		inputChipList = inputChipList.filter((name) => name !== breedName);
+		selectedBreeds = selectedBreeds.filter((name) => name !== breedName);
+		handleSearchDogs();
 	};
 
-	const handleInput = (event: Event) => {
+	const handleZipcodeInput = (event: Event) => {
 		const inputEvent = event as Event & { target: HTMLInputElement };
 		zipcode = inputEvent.target.value.replace(/\D/g, '').slice(0, 5);
 	};
 
-	const searchDogs = async () => {
-		try {
-			const sortBreedParam = sortAscending ? '&sort=breed:asc' : '&sort=breed:desc';
-			const maxAgeParam = maxAge ? `&ageMax=${maxAge}` : '';
-			const zipcodeParam = zipcode.length != 0 && zipcode.length == 5 ? `&zipCodes=${zipcode}` : '';
-			const sizeParam = size ? `&size=${size}` : '';
-			const breedsParams =
-				inputChipList.length && inputChipList.length > 0
-					? `breeds=${inputChipList.join('&breeds=')}`
-					: '';
-			const queryUrl = `${PUBLIC_API_URL}/dogs/search?${breedsParams}${sortBreedParam}${maxAgeParam}${zipcodeParam}${sizeParam}`;
-
-			const response = await fetch(queryUrl, {
-				method: 'GET',
-				credentials: 'include'
-			});
-
-			if (!response.ok) goto('/logout');
-
-			const data = await response.json();
-			if (data.total == 0) searchMessage = 'No results found with specified filter.';
-			if (data.total) paginationSettings.size = data.total;
-			if (data.next) nextPaginationQuery = data.next;
-
-			const dogs = await getDogs(data.resultIds, false);
-			return dogs;
-		} catch (error) {
-			console.error('Error:', error);
-		}
+	const handleSearchDogs = async () => {
+		isSearching = true;
+		const data = await searchDogs(sortAscending, maxAge, zipcode, size, selectedBreeds);
+		if (data?.next) nextPaginationQuery = data.next;
+		if (data?.total) paginationSettings.size = data.total;
+		if (data?.total === 0) searchMessage = 'No results found with specified filter.';
+		allDogs = data.resultIds.length !== 0 ? await fetchDogs(data.resultIds) : [];
+		isSearching = false;
 	};
 
-	const fetchNext = async () => {
-		try {
-			const queryUrl = `${PUBLIC_API_URL}${nextPaginationQuery}`;
-			const response = await fetch(queryUrl, {
-				method: 'GET',
-				credentials: 'include'
-			});
-			if (!response.ok) goto('/logout');
-
-			const data = await response.json();
-			if (data.next) nextPaginationQuery = data.next;
-			allDogs = await getDogs(data.resultIds, true);
-		} catch (error) {
-			console.error('Error:', error);
-		}
+	const handleFetchNext = async () => {
+		const data = await fetchNextDogs(nextPaginationQuery);
+		if (data?.next) nextPaginationQuery = data.next;
+		allDogs = [...allDogs, ...(await fetchDogs(data.resultIds))];
 	};
 
-	const getDogs = async (listOfDogIds: string[], appendDogs: boolean) => {
-		try {
-			const response = await fetch(`${PUBLIC_API_URL}/dogs`, {
-				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(listOfDogIds)
-			});
-
-			if (!response.ok) goto('/logout');
-			const data: Dog[] = addIsFavoriteFlag(await response.json());
-
-			if (appendDogs) {
-				return [...allDogs, ...data];
-			} else {
-				return data;
-			}
-		} catch (error) {
-			console.error('Error:', error);
-		}
-		return [];
-	};
-
-	const getMatchedDog = async () => {
-		const listOfDogIds = $favoriteDogs
+	const getMatchedDogFromFavorites = async (): Promise<Dog> => {
+		const listOfFavDogIds = $favoriteDogs
 			.filter((dog) => dog.isFavorite === true)
 			.map((dog) => dog.id);
-		try {
-			const response = await fetch(`${PUBLIC_API_URL}/dogs/match`, {
-				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(listOfDogIds)
-			});
-
-			if (!response.ok) goto('/logout');
-			const data: Match = await response.json();
-			return $favoriteDogs.filter((dog) => dog.id === data.match)[0];
-		} catch (error) {
-			console.error('Error:', error);
-		}
-		return;
+		const data = await fetchMatchedDogId(listOfFavDogIds);
+		return $favoriteDogs.filter((dog) => dog.id === data.match)[0];
 	};
 
-	const onNextHandler = async (e: {
+	const onNextStepHandler = (e: {
 		detail: { state: { current: number; total: number }; step: number };
 	}) => {
 		syncFavoriteDogs($favoriteDogs);
 
 		if (e.detail.step == 1) {
-			matchedDog = getMatchedDog();
+			matchedDog = getMatchedDogFromFavorites();
 		}
 	};
 
-	const onBackHandler = (e: {
+	const onPrevStepHandler = (e: {
 		detail: { state: { current: number; total: number }; step: number };
 	}) => {
 		syncFavoriteDogs($favoriteDogs);
@@ -202,20 +127,13 @@
 			return;
 		}
 		currentPage = paginationSettings.page;
-		fetchNext();
-	};
-
-	const searchButtonClicked = async () => {
-		isSearching = true;
-		const queriedDogs = await searchDogs();
-		isSearching = false;
-		allDogs = queriedDogs ? queriedDogs : [];
-		paginationSettings.page = 0;
+		handleFetchNext();
+		syncFavoriteDogs($favoriteDogs);
 	};
 
 	const resetData = () => {
 		allDogs = [];
-		inputChipList = [];
+		selectedBreeds = [];
 		forceStepRerender = !forceStepRerender;
 		$favoriteDogs = [];
 		paginationSettings.size = 0;
@@ -227,9 +145,9 @@
 	<Stepper
 		class="m-5"
 		buttonCompleteLabel="Adopt Another"
-		on:next={onNextHandler}
+		on:next={onNextStepHandler}
 		on:complete={resetData}
-		on:back={onBackHandler}
+		on:back={onPrevStepHandler}
 	>
 		<Step buttonNextLabel="Confirm Matches →" locked={$favoriteDogs.length == 0}>
 			<svelte:fragment slot="header">
@@ -252,7 +170,7 @@
 					/>
 					<button
 						class="btn-icon variant-soft-primary rounded-md h-14 w-14"
-						on:click={searchButtonClicked}
+						on:click={handleSearchDogs}
 						><Icon
 							icon="material-symbols:search-rounded"
 							class="text-4xl text-primary-500"
@@ -272,7 +190,7 @@
 				</div>
 
 				<ul class="my-2 space-x-1 space-y-1">
-					{#each inputChipList as breedName}
+					{#each selectedBreeds as breedName}
 						<li class="chip variant-soft hover:variant-filled">
 							<button on:click={() => removeChip(breedName)}
 								><Icon icon="material-symbols:close-rounded" /></button
@@ -287,7 +205,7 @@
 						bind:input={inputBreed}
 						options={breedOptions}
 						on:selection={onBreedSelection}
-						denylist={inputChipList}
+						denylist={selectedBreeds}
 					/>
 				</section>
 
@@ -298,7 +216,7 @@
 						<div class="input-group-shim h-full"><Icon icon="tabler:zip"></Icon></div>
 						<input
 							bind:value={zipcode}
-							on:input={handleInput}
+							on:input={handleZipcodeInput}
 							inputmode="numeric"
 							placeholder="Zipcode"
 							class="p-2 w-full"
@@ -327,7 +245,7 @@
 						<Icon icon="icon-park-solid:caution" class="h3 mx-5" />
 						<div class="alert-message">
 							<h3 class="h3">Warning</h3>
-							<p>Zipcode filter not applied. Zipcodes should be 5 digit length.</p>
+							<p>Zipcode filter will not applied. Zipcodes should be 5 digit length.</p>
 						</div>
 						<div class="alert-actions">
 							<button
@@ -355,7 +273,15 @@
 					class="max-w-screen-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center"
 				>
 					{#each paginatedSource as dogObject (dogObject.id)}
-						<DogCard {dogObject} />
+						<DogCard
+							id={dogObject.id}
+							name={dogObject.name}
+							img={dogObject.img}
+							age={dogObject.age}
+							zip_code={dogObject.zip_code}
+							breed={dogObject.zip_code}
+							isFavorite={dogIsAFavoriteDog($favoriteDogs, dogObject)}
+						/>
 					{/each}
 				</ul>
 			{:else}
@@ -390,7 +316,16 @@
 					class="max-w-screen-2xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center mx-5 md:mx-10 lg:mx-20"
 				>
 					{#each $favoriteDogs as dogObject (dogObject.id)}
-						<DogCard {dogObject} inConfirmationStep={true} />
+						<DogCard
+							id={dogObject.id}
+							name={dogObject.name}
+							img={dogObject.img}
+							age={dogObject.age}
+							zip_code={dogObject.zip_code}
+							breed={dogObject.zip_code}
+							isFavorite={dogIsAFavoriteDog($favoriteDogs, dogObject)}
+							inConfirmationStep={true}
+						/>
 					{/each}
 				</ul>
 			{:else}
@@ -408,18 +343,27 @@
 						<ProgressRadial width="w-10" /> Fetching your match
 					</h1>
 				</header>
-			{:then dog}
+			{:then dogObject}
 				<FullscreenConfetti />
 				<header class="text-center mt-10 sm:mt-5">
 					<h1
 						class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500"
 					>
-						Congrats! <br /> You've Matched With {dog?.name}.
+						Congrats! <br /> You've Matched With {dogObject?.name}.
 					</h1>
 				</header>
 				<ul class="grid grid-cols-1">
-					{#if dog}
-						<DogCard dogObject={dog} showButtons={false} />
+					{#if dogObject}
+						<DogCard
+							id={dogObject.id}
+							name={dogObject.name}
+							img={dogObject.img}
+							age={dogObject.age}
+							zip_code={dogObject.zip_code}
+							breed={dogObject.zip_code}
+							isFavorite={dogIsAFavoriteDog($favoriteDogs, dogObject)}
+							showButtons={false}
+						/>
 					{/if}
 				</ul>
 			{:catch _}

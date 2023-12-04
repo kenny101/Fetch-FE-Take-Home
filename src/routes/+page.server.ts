@@ -1,4 +1,6 @@
-import { getAllFavoriteDogs, areDogsEqual, deleteDogFromDB, insertDogIntoDB } from "$lib/server/db.js";
+import { listOfDogsSchema } from "$lib/schemas/formSchemas";
+import { getAllFavoriteDogs, deleteDogFromDB, insertDogIntoDB, areDogsEqual } from "$lib/server/db.js";
+import { error } from '@sveltejs/kit';
 
 export const load = async ({ locals }) => {
     const dogs = await getAllFavoriteDogs(locals.user.id);
@@ -9,13 +11,22 @@ export const load = async ({ locals }) => {
 };
 
 export const actions = {
-    sync: async ({request, locals}) => {
+    sync: async ({ request, locals }) => {
         const formData = Object.fromEntries(await request.formData()) as {
             favoriteDogs: string;
         };
 
         let parsedDogs: Dog[] = JSON.parse(formData.favoriteDogs);
-        
+
+        // Validate list of favorite dogs against the schema before making changes to DB
+        try {
+            listOfDogsSchema.parse(parsedDogs);
+        } catch {
+            throw error(400, {
+                message: 'Invalid data submitted.',
+            });
+        }
+
         const favoriteDogs: Dog[] = await getAllFavoriteDogs(locals.user.id);
 
         // Get dogs that are in parsedDogs but not in favoriteDogs to insert into DB
@@ -30,7 +41,5 @@ export const actions = {
 
         dogsInParsedButNotFavorite.map((dog) => { insertDogIntoDB(dog, locals.user.id) })
         dogsInFavoriteButNotParsed.map((dog) => { deleteDogFromDB(dog.id, locals.user.id) })
-
-        return await getAllFavoriteDogs(locals.user.id);
     }
 }

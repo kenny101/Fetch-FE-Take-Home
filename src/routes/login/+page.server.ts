@@ -5,17 +5,16 @@ import { createAuthJWT } from "$lib/server/jwt.js";
 import { userLoginSchema } from "$lib/schemas/formSchemas.js";
 import { message, setError, superValidate } from "sveltekit-superforms/server";
 
-export const load = async ({cookies, request}) => {
+export const load = async ({ request }) => {
   const form = await superValidate(request, userLoginSchema);
-
   return {
     form
   }
 };
 
 export const actions = {
-  default: async (event) => {
-    const form = await superValidate(event, userLoginSchema);
+  default: async ({ request, cookies }) => {
+    const form = await superValidate(request, userLoginSchema);
 
     if (!form.valid) {
       return message(form, 'Invalid form');
@@ -53,7 +52,7 @@ export const actions = {
       id: user[0].id
     });
 
-    event.cookies.set("auth_token", token, {
+    cookies.set("auth_token", token, {
       path: "/",
       secure: true,
       httpOnly: true,

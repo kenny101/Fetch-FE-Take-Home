@@ -1,8 +1,6 @@
 import { verifyAuthJWT, revalidateJWT } from "$lib/server/jwt";
 import { redirect, type Handle } from "@sveltejs/kit";
 
-
-
 export const handle: Handle = async ({ event, resolve }) => {
     const token = event.cookies.get("auth_token");
 
