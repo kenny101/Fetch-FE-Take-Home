@@ -172,6 +172,14 @@ export const fetchMatchedDogId = async (listOfDogIds: string[]): Promise<Match> 
     return { match: '' } as Match;
 };
 
+
+/**
+ * Requests login auth token  
+ *
+ * @param name - Name to authenticate.
+ * @param email - Email to authenticate.
+ * @returns True if the dog is a favorite, false otherwise.
+ */
 export const fetchLoginSession = async (name: string, email: string) => {
     try {
         const response = await fetch(`${PUBLIC_API_URL}/auth/login`, {

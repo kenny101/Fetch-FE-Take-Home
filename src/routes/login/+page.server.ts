@@ -16,11 +16,18 @@ export const actions = {
   default: async ({ request, cookies }) => {
     const form = await superValidate(request, userLoginSchema);
 
+    form.data.email = form.data.email.toLowerCase();
+    form.data.name = form.data.name.toLowerCase();
+
     if (!form.valid) {
       return message(form, 'Invalid form');
     }
 
-    const userGivenEmail = await db.select({ email: usersTable.email, name: usersTable.name }).from(usersTable).where(eq(usersTable.email, form.data.email)).limit(1);
+    const userGivenEmail = await db
+      .select({ email: usersTable.email, name: usersTable.name })
+      .from(usersTable)
+      .where(eq(usersTable.email, form.data.email))
+      .limit(1);
 
     if (userGivenEmail[0]) {
       if (userGivenEmail[0].name !== form.data.name) {

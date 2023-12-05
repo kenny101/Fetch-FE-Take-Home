@@ -3,6 +3,8 @@ import { createClient } from '@libsql/client';
 import { SECRET_DB_URL, SECRET_DB_AUTH_TOKEN } from '$env/static/private';
 import { dogsTable } from './schema';
 import { eq, and } from "drizzle-orm";
+import type { SuperValidated } from 'sveltekit-superforms';
+import type { ZodObject } from 'zod';
 
 
 export async function deleteDogFromDB(dogId: string, user_id: number) {
@@ -16,7 +18,7 @@ export async function deleteDogFromDB(dogId: string, user_id: number) {
         );
 }
 
-export async function getAllFavoriteDogs(user_id: number)  {
+export async function getAllFavoriteDogs(user_id: number) {
     const dogs: Dog[] = await db
         .select({
             id: dogsTable.dog_id,
@@ -59,11 +61,11 @@ export function areDogsEqual(dog1: Dog, dog2: Dog): boolean {
         dog1.name === dog2.name &&
         dog1.age === dog2.age &&
         dog1.zip_code === dog2.zip_code &&
-        dog1.breed === dog2.breed && 
+        dog1.breed === dog2.breed &&
         dog1.isFavorite == dog2.isFavorite
     );
 }
 
 const client = createClient({ url: SECRET_DB_URL, authToken: SECRET_DB_AUTH_TOKEN });
- 
+
 export const db = drizzle(client);
