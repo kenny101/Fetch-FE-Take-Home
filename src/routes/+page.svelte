@@ -283,7 +283,7 @@
 							img={dogObject.img}
 							age={dogObject.age}
 							zip_code={dogObject.zip_code}
-							breed={dogObject.zip_code}
+							breed={dogObject.breed}
 							isFavorite={dogIsAFavoriteDog($favoriteDogs, dogObject)}
 						/>
 					{/each}

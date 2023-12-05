@@ -3,9 +3,6 @@ import { createClient } from '@libsql/client';
 import { SECRET_DB_URL, SECRET_DB_AUTH_TOKEN } from '$env/static/private';
 import { dogsTable } from './schema';
 import { eq, and } from "drizzle-orm";
-import type { SuperValidated } from 'sveltekit-superforms';
-import type { ZodObject } from 'zod';
-
 
 export async function deleteDogFromDB(dogId: string, user_id: number) {
     await db
