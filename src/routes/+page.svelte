@@ -11,7 +11,7 @@
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 	import DogCard from '$lib/components/DogCard.svelte';
 	import Icon from '@iconify/svelte';
-	import DogImage from '$lib/assets/doggo.jpg';
+	import DogImage from '$lib/assets/doggo.webp';
 	import { favoriteDogs, syncFavoriteDogs, fetchMatchedDogId, dogIsAFavoriteDog } from '$lib/utils';
 	import { Paginator, type PaginationSettings } from '@skeletonlabs/skeleton';
 	import FullscreenConfetti from '$lib/components/FullscreenConfetti.svelte';
@@ -157,7 +157,11 @@
 					>
 						Finding Your New Best Friend Starts with a Fetch
 					</h1>
-					<img src={DogImage} alt="dog peeking out" class="mx-auto h-60 object-cover" />
+					<img
+						src={DogImage}
+						alt="dog peeking out"
+						class="w-full max-w-screen-sm object-cover mx-auto"
+					/>
 				</header>
 			</svelte:fragment>
 			<section class="mb-10 md:mx-20 sm:mx-10">

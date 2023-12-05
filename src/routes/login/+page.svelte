@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DogImage from '$lib/assets/doggo.jpg';
+	import DogImage from '$lib/assets/doggo.webp';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { userLoginSchema } from '$lib/schemas/formSchemas.js';
@@ -29,7 +29,7 @@
 	<h1 class="text-center h1 font-bold text-primary-500 mb-10">
 		Let's Start Finding Your Furry Companion
 	</h1>
-	<img src={DogImage} alt="dog peeking out" class="mx-auto h-60 object-cover" />
+	<img src={DogImage} alt="dog peeking out" class="max-w-screen-sm object-cover mx-auto" />
 </header>
 
 <section class="card p-6 shadow-xl text-left max-w-xl mx-auto">
