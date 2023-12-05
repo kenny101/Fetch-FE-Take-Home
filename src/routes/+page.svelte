@@ -160,7 +160,7 @@
 					<img
 						src={DogImage}
 						alt="dog peeking out"
-						class="w-full max-w-screen-sm object-cover mx-auto"
+						class="w-full max-w-screen-sm h-auto object-cover mx-auto"
 					/>
 				</header>
 			</svelte:fragment>

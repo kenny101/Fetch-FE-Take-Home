@@ -29,7 +29,7 @@
 	<h1 class="text-center h1 font-bold text-primary-500 mb-10">
 		Let's Start Finding Your Furry Companion
 	</h1>
-	<img src={DogImage} alt="dog peeking out" class="max-w-screen-sm object-cover mx-auto" />
+	<img src={DogImage} alt="dog peeking out" class="w-full max-w-screen-sm h-auto object-cover mx-auto" />
 </header>
 
 <section class="card p-6 shadow-xl text-left max-w-xl mx-auto">
