@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import {
 		Autocomplete,
+		InputChip,
 		ProgressRadial,
 		RangeSlider,
 		Step,
@@ -132,10 +133,12 @@
 	};
 
 	const resetData = () => {
+		inputBreed = "";
 		allDogs = [];
 		selectedBreeds = [];
 		forceStepRerender = !forceStepRerender;
 		$favoriteDogs = [];
+		zipcode = "";
 		paginationSettings.size = 0;
 		syncFavoriteDogs($favoriteDogs);
 	};
@@ -165,13 +168,20 @@
 				</header>
 			</svelte:fragment>
 			<section class="mb-10 md:mx-20 sm:mx-10">
-				<div class="input-group grid-cols-[1fr_auto_auto] space-x-1">
+				<div class="input-group grid-cols-[1fr_auto_auto_auto] space-x-1">
 					<input
-						class="input autocomplete py-1 px-3 rounded-lg font-bold text-primary-500"
+						class="input autocomplete py-1 px-3 rounded-lg font-bold placeholder-primary-400"
 						type="text"
 						placeholder="Search By Dog Breed..."
 						bind:value={inputBreed}
 					/>
+
+					{#if inputBreed || selectedBreeds.length}
+						<button class="btn-icon variant-soft-primary rounded-md h-14 w-14" on:click={resetData}
+							><Icon icon="ic:round-clear" class="text-4xl text-primary-500" /></button
+						>
+					{/if}
+
 					<button
 						class="btn-icon variant-soft-primary rounded-md h-14 w-14"
 						on:click={handleSearchDogs}
@@ -370,7 +380,7 @@
 						/>
 					{/if}
 				</ul>
-			{:catch _}
+			{:catch}
 				<header class="text-center mt-10 sm:mt-5">
 					<h1
 						class="mx-auto mb-2 h1 font-bold g:prose-xl max-w-lg leading-tight tracking-tight text-primary-500 flex justify-between items-center"
